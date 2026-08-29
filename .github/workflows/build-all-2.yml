@@ -143,6 +143,9 @@ jobs:
   core_vice_xvic:
     uses: ./.github/workflows/build-vice_xvic.yml
 
+  core_virtualjaguar:
+    uses: ./.github/workflows/build-virtualjaguar.yml
+
   core_x1:
     uses: ./.github/workflows/build-x1.yml
 
