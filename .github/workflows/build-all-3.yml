@@ -19,3 +19,6 @@ jobs:
 
   core_km_parallel_n64_xtreme_amped_turbo:
     uses: ./.github/workflows/build-km_parallel_n64_xtreme_amped_turbo.yml
+
+  core_km_vjag_xtreme_amped:
+    uses: ./.github/workflows/build-km_vjag_xtreme_amped.yml
