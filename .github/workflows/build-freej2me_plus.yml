@@ -1,13 +1,15 @@
 name: Build freej2me_plus
 
 # FreeJ2ME-Plus is a thin C core that execvp's "java" and talks to
-# freej2me_plus-lr.jar over pipes, so this packages three things: the aarch64
-# core, the jar, and a trimmed Temurin 8 JRE to run it with. 64-bit only -
-# the armhf devices (A30, Mini) have 128MB of RAM.
+# freej2me_plus-lr.jar over pipes, so this packages three things per arch: the
+# core, the jar, and a trimmed Temurin 8 JRE to run it with.
 #
 # The JRE needs a font config of our own: Temurin 8 ships no fontconfig.bfc,
 # and OpenJDK's native fontconfig probe wants libuuid, which the devices do not
 # have. Without it the JVM dies in FontConfiguration before drawing a frame.
+#
+# Cores go to the arch-split RetroArch dirs, not Emu/J2ME - run_retroarch
+# prefers a core in the Emu folder, which would pin one card to one arch.
 
 on:
   workflow_dispatch:
@@ -15,15 +17,9 @@ on:
       core_ref:
         description: 'freej2me-plus git ref (commit/tag/branch, blank for devel tip)'
         default: ''
-      jre_url:
-        description: 'JRE tarball URL (blank for latest Temurin 8 aarch64 JRE)'
-        default: ''
   workflow_call:
     inputs:
       core_ref:
-        type: string
-        default: ''
-      jre_url:
         type: string
         default: ''
 
@@ -72,51 +68,72 @@ jobs:
           ant
           ls -l build/
 
-      - name: Download Docker image
+      - name: Download Docker images
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release download toolchains --pattern "cores-arm64.tar.gz" --dir .
-
-      - name: Load Docker image
-        run: gunzip -c cores-arm64.tar.gz | docker load
-
-      - name: Build core (aarch64)
         run: |
-          docker run --rm -v ${{ github.workspace }}:/work \
-            -w /work/freej2me/src/libretro cores-arm64 \
-            make platform=unix CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-gcc
-          file freej2me/src/libretro/freej2me_plus_libretro.so
-          if ! file freej2me/src/libretro/freej2me_plus_libretro.so | grep -q aarch64; then
-            echo "::error::core is not an aarch64 object"; exit 1
-          fi
+          gh release download toolchains --pattern "cores-arm64.tar.gz" --dir .
+          gh release download toolchains --pattern "cores-armhf.tar.gz" --dir .
 
-      - name: Fetch and trim JRE
+      - name: Load Docker images
         run: |
-          URL="${{ inputs.jre_url }}"
-          [ -n "$URL" ] || URL="https://api.adoptium.net/v3/binary/latest/8/ga/linux/aarch64/jre/hotspot/normal/eclipse"
-          curl -fL "$URL" -o jre.tar.gz
-          mkdir -p jre
-          tar xzf jre.tar.gz -C jre --strip-components=1
-          du -sh jre
-          # Bits a J2ME midlet will never touch
-          rm -rf jre/man jre/lib/jfr jre/lib/jfr.jar jre/lib/desktop jre/lib/oblique-fonts \
-                 jre/lib/ext/nashorn.jar jre/lib/ext/cldrdata.jar jre/lib/ext/localedata.jar \
-                 jre/lib/ext/dnsns.jar jre/lib/ext/jaccess.jar jre/lib/aarch64/libattach.so
-          find jre -name '*.diz' -delete
-          # The core only ever runs "java"
-          find jre/bin -type f ! -name java -delete
-          # OpenJDK ships no fonts at all, so bring the 12 faces the config below
-          # names - three families times four styles.
-          mkdir -p jre/lib/fonts
-          for f in DejaVuSans DejaVuSans-Bold DejaVuSans-Oblique DejaVuSans-BoldOblique \
-                   DejaVuSansMono DejaVuSansMono-Bold DejaVuSansMono-Oblique DejaVuSansMono-BoldOblique \
-                   DejaVuSerif DejaVuSerif-Bold DejaVuSerif-Italic DejaVuSerif-BoldItalic; do
-            cp "/usr/share/fonts/truetype/dejavu/$f.ttf" jre/lib/fonts/
-          done
-          F=/mnt/SDCARD/Emu/J2ME/jre/lib/fonts
-          cat > jre/lib/fontconfig.properties <<EOF
+          gunzip -c cores-arm64.tar.gz | docker load
+          gunzip -c cores-armhf.tar.gz | docker load
+
+      - name: Build cores
+        run: |
+          set -e
+          build_core() {
+            image="$1"; cc="$2"; out="$3"; expect="$4"
+            docker run --rm -v ${{ github.workspace }}:/work \
+              -w /work/freej2me/src/libretro "$image" \
+              sh -c "make clean >/dev/null 2>&1; make platform=unix CC=$cc CXX=$cc"
+            cp freej2me/src/libretro/freej2me_plus_libretro.so "$out"
+            file "$out"
+            file "$out" | grep -q "$expect" || {
+              echo "::error::$out is not a $expect object"; exit 1; }
+          }
+          mkdir -p cores64 cores
+          build_core cores-arm64 aarch64-linux-gnu-gcc \
+            cores64/freej2me_plus_libretro.so "ARM aarch64"
+          build_core cores-armhf arm-a30-linux-gnueabihf-gcc \
+            cores/freej2me_plus_libretro.so "ARM, EABI5"
+
+      - name: Fetch and trim JREs
+        run: |
+          set -e
+          # $1 Adoptium arch, $2 JRE native lib dir, $3 destination dir name
+          build_jre() {
+            api_arch="$1"; native="$2"; dest="$3"
+            curl -fL "https://api.adoptium.net/v3/binary/latest/8/ga/linux/${api_arch}/jre/hotspot/normal/eclipse" \
+              -o "jre-${dest}.tar.gz"
+            mkdir -p "$dest"
+            tar xzf "jre-${dest}.tar.gz" -C "$dest" --strip-components=1
+            echo "--- $dest untrimmed: $(du -sh "$dest" | cut -f1)"
+
+            # Bits a J2ME midlet will never touch
+            rm -rf "$dest/man" "$dest/lib/jfr" "$dest/lib/jfr.jar" \
+                   "$dest/lib/desktop" "$dest/lib/oblique-fonts" \
+                   "$dest/lib/ext/nashorn.jar" "$dest/lib/ext/cldrdata.jar" \
+                   "$dest/lib/ext/localedata.jar" "$dest/lib/ext/dnsns.jar" \
+                   "$dest/lib/ext/jaccess.jar" "$dest/lib/$native/libattach.so"
+            find "$dest" -name '*.diz' -delete
+            # The core only ever runs "java"
+            find "$dest/bin" -type f ! -name java -delete
+
+            # OpenJDK ships no fonts at all, so bring the 12 faces the config
+            # below names - three families times four styles.
+            mkdir -p "$dest/lib/fonts"
+            for f in DejaVuSans DejaVuSans-Bold DejaVuSans-Oblique DejaVuSans-BoldOblique \
+                     DejaVuSansMono DejaVuSansMono-Bold DejaVuSansMono-Oblique DejaVuSansMono-BoldOblique \
+                     DejaVuSerif DejaVuSerif-Bold DejaVuSerif-Italic DejaVuSerif-BoldItalic; do
+              cp "/usr/share/fonts/truetype/dejavu/$f.ttf" "$dest/lib/fonts/"
+            done
+
+            F="/mnt/SDCARD/Emu/J2ME/$dest/lib/fonts"
+            cat > "$dest/lib/fontconfig.properties" <<EOF
           version=1
-          
+
           serif.plain.latin-1=DejaVu Serif
           serif.bold.latin-1=DejaVu Serif Bold
           serif.italic.latin-1=DejaVu Serif Italic
@@ -137,9 +154,9 @@ jobs:
           dialoginput.bold.latin-1=DejaVu Sans Mono Bold
           dialoginput.italic.latin-1=DejaVu Sans Mono Oblique
           dialoginput.bolditalic.latin-1=DejaVu Sans Mono Bold Oblique
-          
+
           sequence.allfonts=latin-1
-          
+
           filename.DejaVu_Sans=$F/DejaVuSans.ttf
           filename.DejaVu_Sans_Bold=$F/DejaVuSans-Bold.ttf
           filename.DejaVu_Sans_Oblique=$F/DejaVuSans-Oblique.ttf
@@ -153,40 +170,56 @@ jobs:
           filename.DejaVu_Serif_Italic=$F/DejaVuSerif-Italic.ttf
           filename.DejaVu_Serif_Bold_Italic=$F/DejaVuSerif-BoldItalic.ttf
           EOF
-          # Every face the config names must exist or the JVM NPEs at startup
-          for f in $(sed -n 's/^filename\.[^=]*=//p' jre/lib/fontconfig.properties); do
-            [ -f "jre/lib/fonts/$(basename "$f")" ] || { echo "::error::missing font $f"; exit 1; }
-          done
-          echo "--- trimmed ---"
-          du -sh jre
 
-      - name: Assemble package
+            # Every face the config names must exist or the JVM NPEs at startup
+            for f in $(sed -n 's/^filename\.[^=]*=//p' "$dest/lib/fontconfig.properties"); do
+              [ -f "$dest/lib/fonts/$(basename "$f")" ] || {
+                echo "::error::missing font $f"; exit 1; }
+            done
+            echo "--- $dest trimmed: $(du -sh "$dest" | cut -f1)"
+            file "$dest/bin/java"
+          }
+
+          build_jre aarch64 aarch64 jre
+          build_jre arm     aarch32 jre32
+
+      - name: Assemble packages
         run: |
-          mkdir -p out/BIOS out/Emu/J2ME out/RetroArch/.retroarch/info
-          cp freej2me/build/freej2me_plus-lr.jar out/BIOS/
-          cp freej2me/src/libretro/freej2me_plus_libretro.so out/Emu/J2ME/
-          cp freej2me/src/libretro/freej2me_plus_libretro.info out/RetroArch/.retroarch/info/
-          cp -a jre out/Emu/J2ME/jre
-          cat > out/README.txt <<EOF
-          FreeJ2ME-Plus for spruceOS (aarch64)
+          set -e
+          # $1 core dir, $2 jre dir, $3 zip suffix
+          assemble() {
+            coredir="$1"; jredir="$2"; suffix="$3"
+            out="out-$suffix"
+            rm -rf "$out"
+            mkdir -p "$out/BIOS" "$out/Emu/J2ME" \
+                     "$out/RetroArch/.retroarch/$coredir" \
+                     "$out/RetroArch/.retroarch/info"
+            cp freej2me/build/freej2me_plus-lr.jar "$out/BIOS/"
+            cp "$coredir/freej2me_plus_libretro.so" "$out/RetroArch/.retroarch/$coredir/"
+            cp freej2me/src/libretro/freej2me_plus_libretro.info "$out/RetroArch/.retroarch/info/"
+            cp -a "$jredir" "$out/Emu/J2ME/$jredir"
+            cat > "$out/README.txt" <<EOF
+          FreeJ2ME-Plus for spruceOS ($suffix)
           freej2me-plus $FJ_SHA
-          $(grep JAVA_VERSION jre/release)
+          $(grep JAVA_VERSION "$jredir/release")
 
           Copy BIOS/, Emu/ and RetroArch/ onto the card. The core needs "java" on
-          PATH: the J2ME launch case exports Emu/J2ME/jre/bin. The jar must stay in
-          BIOS/ - the core joins it to RetroArch's system directory by a fixed name.
-          Fonts come from jre/lib/fontconfig.properties, which points at absolute
-          /mnt/SDCARD paths, so the package only works installed on a card.
+          PATH: the J2ME launch case exports Emu/J2ME/$jredir/bin. The jar must stay
+          in BIOS/ - the core joins it to RetroArch's system directory by a fixed
+          name. Fonts come from $jredir/lib/fontconfig.properties, which points at
+          absolute /mnt/SDCARD paths, so this only works installed on a card.
           EOF
-          du -sh out out/Emu/J2ME/jre
-          find out -maxdepth 3 -not -path '*/jre/*'
+            (cd "$out" && zip -qr "../freej2me_plus-$suffix.zip" .)
+            echo "--- $suffix: $(du -sh "$out" | cut -f1) on card, $(du -h "freej2me_plus-$suffix.zip" | cut -f1) zipped"
+          }
 
-      - name: Package and upload
+          assemble cores64 jre   aarch64
+          assemble cores   jre32 armhf
+
+      - name: Upload
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cd out
-          zip -qr ../freej2me_plus-aarch64.zip .
-          cd ..
-          ls -lh freej2me_plus-aarch64.zip
-          gh release upload "beta-${{ github.ref_name }}" freej2me_plus-aarch64.zip --clobber
+          ls -lh freej2me_plus-*.zip
+          gh release upload "beta-${{ github.ref_name }}" \
+            freej2me_plus-aarch64.zip freej2me_plus-armhf.zip --clobber
