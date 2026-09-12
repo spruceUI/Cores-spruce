@@ -187,9 +187,17 @@ jobs:
           # for its 64-bit atomics. The A30 rootfs has it, the Miyoo Mini does
           # not, so take it from the same buildroot sysroot the core is compiled
           # against. The launcher's RPATH covers lib/aarch32, so no env needed.
-          docker run --rm -v ${{ github.workspace }}/jre32:/jre32 cores-armhf \
-            sh -c 'cp -a /opt/a30/arm-a30-linux-gnueabihf/sysroot/usr/lib/libatomic.so.1* /jre32/lib/aarch32/'
-          ls -l jre32/lib/aarch32/libatomic* || {
+          docker run --rm -v ${{ github.workspace }}/jre32:/jre32 cores-armhf sh -c '
+            src=$(find /opt/a30 -name "libatomic.so.1*" -type f | head -1)
+            if [ -z "$src" ]; then
+              echo "no libatomic in the toolchain; what is there:"
+              find /opt/a30 -name "libatomic*"
+              exit 1
+            fi
+            echo "libatomic source: $src"
+            cp -aL "$src" /jre32/lib/aarch32/libatomic.so.1
+          '
+          ls -l jre32/lib/aarch32/libatomic.so.1 || {
             echo "::error::libatomic.so.1 missing from the armhf JRE"; exit 1; }
 
       - name: Assemble packages
