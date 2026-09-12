@@ -4,6 +4,10 @@ name: Build freej2me_plus
 # freej2me_plus-lr.jar over pipes, so this packages three things: the aarch64
 # core, the jar, and a trimmed Temurin 8 JRE to run it with. 64-bit only -
 # the armhf devices (A30, Mini) have 128MB of RAM.
+#
+# The JRE needs a font config of our own: Temurin 8 ships no fontconfig.bfc,
+# and OpenJDK's native fontconfig probe wants libuuid, which the devices do not
+# have. Without it the JVM dies in FontConfiguration before drawing a frame.
 
 on:
   workflow_dispatch:
@@ -101,43 +105,68 @@ jobs:
           find jre -name '*.diz' -delete
           # The core only ever runs "java"
           find jre/bin -type f ! -name java -delete
-          # OpenJDK ships no fonts; without one, any text draw throws "No fonts found"
+          # OpenJDK ships no fonts at all, so bring the 12 faces the config below
+          # names - three families times four styles.
           mkdir -p jre/lib/fonts
-          cp /usr/share/fonts/truetype/dejavu/*.ttf jre/lib/fonts/
+          for f in DejaVuSans DejaVuSans-Bold DejaVuSans-Oblique DejaVuSans-BoldOblique \
+                   DejaVuSansMono DejaVuSansMono-Bold DejaVuSansMono-Oblique DejaVuSansMono-BoldOblique \
+                   DejaVuSerif DejaVuSerif-Bold DejaVuSerif-Italic DejaVuSerif-BoldItalic; do
+            cp "/usr/share/fonts/truetype/dejavu/$f.ttf" jre/lib/fonts/
+          done
+          F=/mnt/SDCARD/Emu/J2ME/jre/lib/fonts
+          cat > jre/lib/fontconfig.properties <<EOF
+          version=1
+          
+          serif.plain.latin-1=DejaVu Serif
+          serif.bold.latin-1=DejaVu Serif Bold
+          serif.italic.latin-1=DejaVu Serif Italic
+          serif.bolditalic.latin-1=DejaVu Serif Bold Italic
+          sansserif.plain.latin-1=DejaVu Sans
+          sansserif.bold.latin-1=DejaVu Sans Bold
+          sansserif.italic.latin-1=DejaVu Sans Oblique
+          sansserif.bolditalic.latin-1=DejaVu Sans Bold Oblique
+          monospaced.plain.latin-1=DejaVu Sans Mono
+          monospaced.bold.latin-1=DejaVu Sans Mono Bold
+          monospaced.italic.latin-1=DejaVu Sans Mono Oblique
+          monospaced.bolditalic.latin-1=DejaVu Sans Mono Bold Oblique
+          dialog.plain.latin-1=DejaVu Sans
+          dialog.bold.latin-1=DejaVu Sans Bold
+          dialog.italic.latin-1=DejaVu Sans Oblique
+          dialog.bolditalic.latin-1=DejaVu Sans Bold Oblique
+          dialoginput.plain.latin-1=DejaVu Sans Mono
+          dialoginput.bold.latin-1=DejaVu Sans Mono Bold
+          dialoginput.italic.latin-1=DejaVu Sans Mono Oblique
+          dialoginput.bolditalic.latin-1=DejaVu Sans Mono Bold Oblique
+          
+          sequence.allfonts=latin-1
+          
+          filename.DejaVu_Sans=$F/DejaVuSans.ttf
+          filename.DejaVu_Sans_Bold=$F/DejaVuSans-Bold.ttf
+          filename.DejaVu_Sans_Oblique=$F/DejaVuSans-Oblique.ttf
+          filename.DejaVu_Sans_Bold_Oblique=$F/DejaVuSans-BoldOblique.ttf
+          filename.DejaVu_Sans_Mono=$F/DejaVuSansMono.ttf
+          filename.DejaVu_Sans_Mono_Bold=$F/DejaVuSansMono-Bold.ttf
+          filename.DejaVu_Sans_Mono_Oblique=$F/DejaVuSansMono-Oblique.ttf
+          filename.DejaVu_Sans_Mono_Bold_Oblique=$F/DejaVuSansMono-BoldOblique.ttf
+          filename.DejaVu_Serif=$F/DejaVuSerif.ttf
+          filename.DejaVu_Serif_Bold=$F/DejaVuSerif-Bold.ttf
+          filename.DejaVu_Serif_Italic=$F/DejaVuSerif-Italic.ttf
+          filename.DejaVu_Serif_Bold_Italic=$F/DejaVuSerif-BoldItalic.ttf
+          EOF
+          # Every face the config names must exist or the JVM NPEs at startup
+          for f in $(sed -n 's/^filename\.[^=]*=//p' jre/lib/fontconfig.properties); do
+            [ -f "jre/lib/fonts/$(basename "$f")" ] || { echo "::error::missing font $f"; exit 1; }
+          done
           echo "--- trimmed ---"
           du -sh jre
 
-      # Belt and braces: the bundled fonts above may be enough on their own, so a
-      # dead focal mirror here should not sink the build.
-      - name: Collect fontconfig libs (aarch64)
-        continue-on-error: true
-        run: |
-          mkdir -p fclibs
-          docker run --rm -v ${{ github.workspace }}/fclibs:/out cores-arm64 bash -c '
-            apt-get update -qq
-            cd /tmp
-            apt-get download libfontconfig1:arm64 libfreetype6:arm64 libexpat1:arm64 libpng16-16:arm64
-            for d in *.deb; do dpkg-deb -x "$d" ex; done
-            find ex -name "lib*.so*" -exec cp -a {} /out/ \;
-            ls -l /out'
-
       - name: Assemble package
         run: |
-          mkdir -p out/BIOS out/Emu/J2ME/lib out/RetroArch/.retroarch/info
+          mkdir -p out/BIOS out/Emu/J2ME out/RetroArch/.retroarch/info
           cp freej2me/build/freej2me_plus-lr.jar out/BIOS/
           cp freej2me/src/libretro/freej2me_plus_libretro.so out/Emu/J2ME/
           cp freej2me/src/libretro/freej2me_plus_libretro.info out/RetroArch/.retroarch/info/
           cp -a jre out/Emu/J2ME/jre
-          cp -a fclibs/. out/Emu/J2ME/lib/ 2>/dev/null || true
-          mkdir -p out/Emu/J2ME/fonts
-          cat > out/Emu/J2ME/fonts/fonts.conf <<'EOF'
-          <?xml version="1.0"?>
-          <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
-          <fontconfig>
-            <dir>/mnt/SDCARD/Emu/J2ME/jre/lib/fonts</dir>
-            <cachedir>/tmp/fontconfig</cachedir>
-          </fontconfig>
-          EOF
           cat > out/README.txt <<EOF
           FreeJ2ME-Plus for spruceOS (aarch64)
           freej2me-plus $FJ_SHA
@@ -146,6 +175,8 @@ jobs:
           Copy BIOS/, Emu/ and RetroArch/ onto the card. The core needs "java" on
           PATH: the J2ME launch case exports Emu/J2ME/jre/bin. The jar must stay in
           BIOS/ - the core joins it to RetroArch's system directory by a fixed name.
+          Fonts come from jre/lib/fontconfig.properties, which points at absolute
+          /mnt/SDCARD paths, so the package only works installed on a card.
           EOF
           du -sh out out/Emu/J2ME/jre
           find out -maxdepth 3 -not -path '*/jre/*'
