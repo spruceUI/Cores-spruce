@@ -56,6 +56,12 @@ jobs:
               if [ -n "$REF" ]; then
                 cd libretro-yabasanshiro && git fetch origin && git checkout "$REF" && cd ..
               fi
+
+              # YabaSanshiro incorrectly adds the x86-only SSE flag
+              # when cross-compiling for ARM.
+              grep -RIl --exclude-dir=.git -- "-mfpmath=sse" libretro-yabasanshiro |
+                xargs -r sed -i "s/-mfpmath=sse//g"
+
               ./libretro-build.sh yabasanshiro
               cp dist/unix/yabasanshiro_libretro.so /output/cores64/
             ' || echo "::warning::arm64 build failed for yabasanshiro"
@@ -70,6 +76,12 @@ jobs:
               if [ -n "$REF" ]; then
                 cd libretro-yabasanshiro && git fetch origin && git checkout "$REF" && cd ..
               fi
+
+              # YabaSanshiro incorrectly adds the x86-only SSE flag
+              # when cross-compiling for ARM.
+              grep -RIl --exclude-dir=.git -- "-mfpmath=sse" libretro-yabasanshiro |
+                xargs -r sed -i "s/-mfpmath=sse//g"
+
               ./libretro-build.sh yabasanshiro
               cp dist/unix/yabasanshiro_libretro.so /output/cores/
             ' || echo "::warning::armhf build failed for yabasanshiro"
