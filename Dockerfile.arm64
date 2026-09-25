@@ -16,15 +16,22 @@ RUN dpkg --add-architecture arm64 && \
     git \
     ca-certificates \
     zip \
-    cmake \
+    curl \
     zlib1g-dev:arm64 \
     libgl-dev:arm64 \
     libgles2-mesa-dev:arm64 \
     && rm -rf /var/lib/apt/lists/*
 
+# focal's CMake 3.16 predates the CMAKE_TOOLCHAIN_FILE env var (3.21) and flycast's floor (3.24)
+RUN curl -sSL https://github.com/Kitware/CMake/releases/download/v3.31.12/cmake-3.31.12-linux-x86_64.tar.gz \
+    | tar xz -C /opt && ln -s /opt/cmake-3.31.12-linux-x86_64/bin/cmake /usr/local/bin/cmake
+
+COPY toolchain-arm64.cmake /opt/toolchain.cmake
+
 # Clone libretro-super build system
 RUN git clone --depth 1 https://github.com/libretro/libretro-super.git /libretro-super
 
 ENV HOST_CC=aarch64-linux-gnu
+ENV CMAKE_TOOLCHAIN_FILE=/opt/toolchain.cmake
 
 WORKDIR /libretro-super
