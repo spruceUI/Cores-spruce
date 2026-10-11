@@ -11,6 +11,9 @@ jobs:
   core_fake08:
     uses: ./.github/workflows/build-fake08.yml
 
+  core_gloopy:
+    uses: ./.github/workflows/build-gloopy.yml
+
   core_libgametank:
     uses: ./.github/workflows/build-libgametank.yml
 
