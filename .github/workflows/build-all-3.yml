@@ -25,3 +25,6 @@ jobs:
 
   core_km_vjag_xtreme_amped:
     uses: ./.github/workflows/build-km_vjag_xtreme_amped.yml
+
+  core_yabadabadoo:
+    uses: ./.github/workflows/build-yabadabadoo.yml
