@@ -72,6 +72,8 @@ jobs:
           docker run --rm -v ${{ github.workspace }}/armgba:/armgba -v ${{ github.workspace }}/output:/output -w /armgba cores-armhf \
             bash -c '
               cmake -S . -B build-armhf -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_C_FLAGS="-mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard" \
+                -DCMAKE_CXX_FLAGS="-mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard" \
               && cmake --build build-armhf -j$(nproc) \
               && cp build-armhf/armgba_libretro.so /output/cores/
             ' || echo "::warning::armhf build failed for armgba"
