@@ -53,6 +53,9 @@ jobs:
           if [ -n "$REF" ]; then
             git -C armgba checkout "$REF"
           fi
+          # GCC only has vld1q_u8_x4 on 32-bit ARM from 14, not 9
+          sed -i 's/__GNUC__ < 9$/__GNUC__ < 14/' armgba/src/render-neon.c
+          grep -q '__GNUC__ < 14$' armgba/src/render-neon.c
           mkdir -p output
           cp armgba/libretro/armgba_libretro.info output/
 
