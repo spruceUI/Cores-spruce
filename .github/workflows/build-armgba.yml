@@ -48,7 +48,7 @@ jobs:
 
       - name: Clone armGBA
         run: |
-          git clone https://github.com/Jacob-Matthew-Cook/armGBA.git armgba
+          git clone https://github.com/MagnominusGit/armGBA.git armgba
           REF="${{ inputs.core_ref }}"
           if [ -n "$REF" ]; then
             git -C armgba checkout "$REF"
