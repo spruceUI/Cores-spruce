@@ -11,6 +11,9 @@ jobs:
   core_armgba:
     uses: ./.github/workflows/build-armgba.yml
 
+  core_armn64:
+    uses: ./.github/workflows/build-armn64.yml
+
   core_fake08:
     uses: ./.github/workflows/build-fake08.yml
 
