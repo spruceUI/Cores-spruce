@@ -56,7 +56,7 @@ jobs:
               if [ -n "$REF" ]; then
                 cd libretro-gambatte && git fetch origin && git checkout "$REF" && cd ..
               fi
-              ./libretro-build.sh gambatte
+              HAVE_NETWORK=1 ./libretro-build.sh gambatte
               cp dist/unix/gambatte_libretro.so /output/cores64/
             ' || echo "::warning::arm64 build failed for gambatte"
 
@@ -70,7 +70,7 @@ jobs:
               if [ -n "$REF" ]; then
                 cd libretro-gambatte && git fetch origin && git checkout "$REF" && cd ..
               fi
-              ./libretro-build.sh gambatte
+              HAVE_NETWORK=1 ./libretro-build.sh gambatte
               cp dist/unix/gambatte_libretro.so /output/cores/
             ' || echo "::warning::armhf build failed for gambatte"
 
