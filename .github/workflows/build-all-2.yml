@@ -47,6 +47,9 @@ jobs:
   core_picodrive:
     uses: ./.github/workflows/build-picodrive.yml
 
+  core_pokedaisy:
+    uses: ./.github/workflows/build-pokedaisy.yml
+
   core_pokemini:
     uses: ./.github/workflows/build-pokemini.yml
 

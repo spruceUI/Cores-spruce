@@ -1,0 +1,130 @@
+name: Build pokedaisy
+
+on:
+  workflow_dispatch:
+    inputs:
+      core_ref:
+        description: 'Core git ref (commit/tag/branch, blank for latest)'
+        default: ''
+  workflow_call:
+    inputs:
+      core_ref:
+        type: string
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure beta release exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="beta-${{ github.ref_name }}"
+          gh release view "$TAG" >/dev/null 2>&1 || \
+            gh release create "$TAG" \
+              --target "${{ github.ref_name }}" \
+              --title "Beta Build (${{ github.ref_name }})" \
+              --prerelease \
+              --notes "Core builds from ${{ github.ref_name }}" \
+            || true
+
+      - name: Download Docker images
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download toolchains --pattern "cores-arm64.tar.gz" --dir .
+          gh release download toolchains --pattern "cores-armhf.tar.gz" --dir .
+
+      - name: Load Docker images
+        run: |
+          gunzip -c cores-arm64.tar.gz | docker load
+          gunzip -c cores-armhf.tar.gz | docker load
+
+      - name: Clone pokedaisy-lr
+        run: |
+          git clone --branch feat/libretro-core https://github.com/thwonp/pokedaisy-lr.git pokedaisy
+          REF="${{ inputs.core_ref }}"
+          if [ -n "$REF" ]; then
+            git -C pokedaisy checkout "$REF"
+          fi
+          git -C pokedaisy submodule update --init third_party/mgba
+          mkdir -p output
+          cat > output/pokedaisy_libretro.info <<'EOF'
+          display_name = "Pokemon - PokeDaisy (mGBA)"
+          authors = "thwonp|endrift"
+          supported_extensions = "gba|gb|gbc"
+          corename = "PokeDaisy"
+          categories = "Emulator"
+          license = "MPL-2.0"
+          permissions = ""
+          display_version = "0.3"
+          manufacturer = "Nintendo"
+          systemname = "Game Boy Advance"
+          systemid = "gba"
+          database = "Nintendo - Game Boy Advance|Nintendo - Game Boy|Nintendo - Game Boy Color"
+          needs_fullpath = "false"
+          EOF
+
+      - name: Build arm64
+        run: |
+          mkdir -p output/cores64
+          docker run --rm -v ${{ github.workspace }}/pokedaisy:/pokedaisy -v ${{ github.workspace }}/output:/output -w /pokedaisy cores-arm64 \
+            bash -c '
+              cmake -S libretro -B build-arm64 -DCMAKE_BUILD_TYPE=Release \
+              && cmake --build build-arm64 -j$(nproc) \
+              && cp build-arm64/pokedaisy_libretro.so /output/cores64/
+            ' || echo "::warning::arm64 build failed for pokedaisy"
+
+      - name: Build armhf
+        run: |
+          mkdir -p output/cores
+          docker run --rm -v ${{ github.workspace }}/pokedaisy:/pokedaisy -v ${{ github.workspace }}/output:/output -w /pokedaisy cores-armhf \
+            bash -c '
+              cmake -S libretro -B build-armhf -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_C_FLAGS="-mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard" \
+                -DCMAKE_CXX_FLAGS="-mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard" \
+              && cmake --build build-armhf -j$(nproc) \
+              && cp build-armhf/pokedaisy_libretro.so /output/cores/
+            ' || echo "::warning::armhf build failed for pokedaisy"
+
+      - name: Check architectures and glibc floor
+        run: |
+          for so in output/cores64/pokedaisy_libretro.so output/cores/pokedaisy_libretro.so; do
+            [ -f "$so" ] || continue
+            file "$so"
+            echo "Newest glibc symbol: $(objdump -T "$so" | grep -o 'GLIBC_[0-9.]*' | sort -Vu | tail -1)"
+          done
+          if [ -f output/cores64/pokedaisy_libretro.so ]; then
+            file output/cores64/pokedaisy_libretro.so | grep -q aarch64 || { echo "::error::arm64 build is not aarch64"; exit 1; }
+          fi
+          if [ -f output/cores/pokedaisy_libretro.so ]; then
+            file output/cores/pokedaisy_libretro.so | grep -q 'ARM, EABI5' || { echo "::error::armhf build is not 32-bit ARM"; exit 1; }
+            NEWEST=$(objdump -T output/cores/pokedaisy_libretro.so | grep -o 'GLIBC_[0-9.]*' | sort -Vu | tail -1)
+            if [ "$(printf '%s\n' "$NEWEST" GLIBC_2.23 | sort -V | tail -1)" != GLIBC_2.23 ]; then
+              echo "::error::armhf needs $NEWEST, A30 has glibc 2.23"
+              exit 1
+            fi
+          fi
+
+      - name: Package and upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd output
+          CONTENTS=""
+          [ -f cores64/pokedaisy_libretro.so ] && CONTENTS="$CONTENTS cores64/"
+          [ -f cores/pokedaisy_libretro.so ] && CONTENTS="$CONTENTS cores/"
+          [ -f pokedaisy_libretro.info ] && CONTENTS="$CONTENTS pokedaisy_libretro.info"
+          if [ -f cores64/pokedaisy_libretro.so ] || [ -f cores/pokedaisy_libretro.so ]; then
+            zip -r pokedaisy_libretro.zip $CONTENTS
+            gh release upload "beta-${{ github.ref_name }}" pokedaisy_libretro.zip --clobber
+          else
+            echo "::error::No builds succeeded for pokedaisy"
+            exit 1
+          fi
