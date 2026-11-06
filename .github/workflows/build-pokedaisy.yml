@@ -6,11 +6,17 @@ on:
       core_ref:
         description: 'Core git ref (commit/tag/branch, blank for latest)'
         default: ''
+      repo_owner:
+        description: 'GitHub user or organization that owns pokedaisy-lr'
+        default: 'thwonp'
   workflow_call:
     inputs:
       core_ref:
         type: string
         default: ''
+      repo_owner:
+        type: string
+        default: 'thwonp'
 
 permissions:
   contents: write
@@ -47,8 +53,10 @@ jobs:
           gunzip -c cores-armhf.tar.gz | docker load
 
       - name: Clone pokedaisy-lr
+        env:
+          REPO_OWNER: ${{ inputs.repo_owner }}
         run: |
-          git clone --branch feat/libretro-core https://github.com/thwonp/pokedaisy-lr.git pokedaisy
+          git clone --branch feat/libretro-core "https://github.com/${REPO_OWNER}/pokedaisy-lr.git" pokedaisy
           REF="${{ inputs.core_ref }}"
           if [ -n "$REF" ]; then
             git -C pokedaisy checkout "$REF"
