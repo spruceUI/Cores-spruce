@@ -1,0 +1,116 @@
+name: Build armnes
+
+on:
+  workflow_dispatch:
+    inputs:
+      core_ref:
+        description: 'Core git ref (commit/tag/branch, blank for latest)'
+        default: ''
+  workflow_call:
+    inputs:
+      core_ref:
+        type: string
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure beta release exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="beta-${{ github.ref_name }}"
+          gh release view "$TAG" >/dev/null 2>&1 || \
+            gh release create "$TAG" \
+              --target "${{ github.ref_name }}" \
+              --title "Beta Build (${{ github.ref_name }})" \
+              --prerelease \
+              --notes "Core builds from ${{ github.ref_name }}" \
+            || true
+
+      - name: Download Docker images
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download toolchains --pattern "cores-arm64.tar.gz" --dir .
+          gh release download toolchains --pattern "cores-armhf.tar.gz" --dir .
+
+      - name: Load Docker images
+        run: |
+          gunzip -c cores-arm64.tar.gz | docker load
+          gunzip -c cores-armhf.tar.gz | docker load
+
+      - name: Clone armNES
+        run: |
+          git clone https://github.com/MagnominusGit/armNES.git armnes
+          REF="${{ inputs.core_ref }}"
+          if [ -n "$REF" ]; then
+            git -C armnes checkout "$REF"
+          fi
+          git -C armnes submodule update --init --recursive
+          mkdir -p output
+          cp armnes/libretro/armnes_libretro.info output/
+
+      - name: Build arm64
+        run: |
+          mkdir -p output/cores64
+          docker run --rm -v ${{ github.workspace }}/armnes:/armnes -v ${{ github.workspace }}/output:/output -w /armnes cores-arm64 \
+            bash -c '
+              cmake -S . -B build-arm64 -DCMAKE_BUILD_TYPE=Release \
+              && cmake --build build-arm64 -j$(nproc) --target armnes_libretro \
+              && cp build-arm64/armnes_libretro.so /output/cores64/
+            ' || echo "::warning::arm64 build failed for armnes"
+
+      - name: Build armhf
+        run: |
+          mkdir -p output/cores
+          docker run --rm -v ${{ github.workspace }}/armnes:/armnes -v ${{ github.workspace }}/output:/output -w /armnes cores-armhf \
+            bash -c '
+              cmake -S . -B build-armhf -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_C_FLAGS="-mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard" \
+                -DCMAKE_CXX_FLAGS="-mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard" \
+              && cmake --build build-armhf -j$(nproc) --target armnes_libretro \
+              && cp build-armhf/armnes_libretro.so /output/cores/
+            ' || echo "::warning::armhf build failed for armnes"
+
+      - name: Check architectures and glibc floor
+        run: |
+          for so in output/cores64/armnes_libretro.so output/cores/armnes_libretro.so; do
+            [ -f "$so" ] || continue
+            file "$so"
+            echo "Newest glibc symbol: $(objdump -T "$so" | grep -o 'GLIBC_[0-9.]*' | sort -Vu | tail -1)"
+          done
+          if [ -f output/cores64/armnes_libretro.so ]; then
+            file output/cores64/armnes_libretro.so | grep -q aarch64 || { echo "::error::arm64 build is not aarch64"; exit 1; }
+          fi
+          if [ -f output/cores/armnes_libretro.so ]; then
+            file output/cores/armnes_libretro.so | grep -q 'ARM, EABI5' || { echo "::error::armhf build is not 32-bit ARM"; exit 1; }
+            NEWEST=$(objdump -T output/cores/armnes_libretro.so | grep -o 'GLIBC_[0-9.]*' | sort -Vu | tail -1)
+            if [ "$(printf '%s\n' "$NEWEST" GLIBC_2.23 | sort -V | tail -1)" != GLIBC_2.23 ]; then
+              echo "::error::armhf needs $NEWEST, A30 has glibc 2.23"
+              exit 1
+            fi
+          fi
+
+      - name: Package and upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd output
+          CONTENTS=""
+          [ -f cores64/armnes_libretro.so ] && CONTENTS="$CONTENTS cores64/"
+          [ -f cores/armnes_libretro.so ] && CONTENTS="$CONTENTS cores/"
+          [ -f armnes_libretro.info ] && CONTENTS="$CONTENTS armnes_libretro.info"
+          if [ -f cores64/armnes_libretro.so ] || [ -f cores/armnes_libretro.so ]; then
+            zip -r armnes_libretro.zip $CONTENTS
+            gh release upload "beta-${{ github.ref_name }}" armnes_libretro.zip --clobber
+          else
+            echo "::error::No builds succeeded for armnes"
+            exit 1
+          fi
