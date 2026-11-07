@@ -63,7 +63,7 @@ jobs:
             export CCACHE_DIR=/tmp/ccache
             FLAGS="-O3 -mtune=cortex-a55 -pthread -I/opt/vulkan-headers/include"
             LINK="-pthread -static-libstdc++ -static-libgcc -mtune=cortex-a55"
-            for p in patches/*.patch; do
+            for p in /src/patches/*.patch; do
               [ -e "$p" ] || continue
               git -C DSperate apply --reverse --check "$p" 2>/dev/null && continue
               git -C DSperate apply "$p"
