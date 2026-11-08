@@ -17,6 +17,9 @@ jobs:
   core_armnes:
     uses: ./.github/workflows/build-armnes.yml
 
+  core_armnes_arcade:
+    uses: ./.github/workflows/build-armnes_arcade.yml
+
   core_fake08:
     uses: ./.github/workflows/build-fake08.yml
 
