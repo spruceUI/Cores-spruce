@@ -56,12 +56,13 @@ jobs:
         env:
           REPO_OWNER: ${{ inputs.repo_owner }}
         run: |
-          git clone --branch feat/armgba-core "https://github.com/${REPO_OWNER}/pokedaisy-lr.git" pokedaisy
+          git clone --branch main "https://github.com/${REPO_OWNER}/pokedaisy-lr.git" pokedaisy
           REF="${{ inputs.core_ref }}"
           if [ -n "$REF" ]; then
             git -C pokedaisy checkout "$REF"
           fi
           git -C pokedaisy submodule update --init third_party/mgba third_party/armgba third_party/zlib
+          git -C pokedaisy submodule update --init --recursive third_party/dsperate-lr
           mkdir -p output
           cat > output/pokedaisy_gbc.info <<'EOF'
           display_name = "Pokemon - PokeDaisy (GB/GBC, mGBA)"
@@ -93,23 +94,47 @@ jobs:
           database = "Nintendo - Game Boy Advance"
           needs_fullpath = "false"
           EOF
+          cat > output/pokedaisy_ds.info <<'EOF'
+          display_name = "Pokemon - PokeDaisy (Nintendo DS)"
+          authors = "thwonp"
+          supported_extensions = "nds"
+          corename = "PokeDaisy DS"
+          categories = "Emulator"
+          license = "MPL-2.0"
+          permissions = ""
+          display_version = "0.3"
+          manufacturer = "Nintendo"
+          systemname = "Nintendo DS"
+          systemid = "nds"
+          database = "Nintendo - Nintendo DS"
+          needs_fullpath = "false"
+          EOF
 
       - name: Build arm64
         run: |
           mkdir -p output/cores64
           docker run --rm -v ${{ github.workspace }}/pokedaisy:/pokedaisy -v ${{ github.workspace }}/output:/output -w /pokedaisy cores-arm64 \
             bash -c '
-              cmake -S libretro -B build-arm64 -DCMAKE_BUILD_TYPE=Release \
-              && cmake --build build-arm64 -j$(nproc) \
-              && cp build-arm64/pokedaisy_libretro.so /output/cores64/pokedaisy_gbc_libretro.so
+              cmake -S libretro -B build-arm64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=/pokedaisy/libretro/aarch64.cmake \
+              && cmake --build build-arm64 --target pokedaisy_gbc_libretro -j$(nproc) \
+              && cp build-arm64/pokedaisy_gbc_libretro.so /output/cores64/
             ' || echo "::warning::arm64 GBC build failed for pokedaisy"
           docker run --rm -v ${{ github.workspace }}/pokedaisy:/pokedaisy -v ${{ github.workspace }}/output:/output -w /pokedaisy cores-arm64 \
             bash -c '
-              cmake -S libretro/armgba -B build-armgba-arm64 -DCMAKE_BUILD_TYPE=Release \
-              && cmake --build build-armgba-arm64 -j$(nproc) \
+              cmake -S libretro/armgba -B build-armgba-arm64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=/pokedaisy/libretro/aarch64.cmake \
+              && cmake --build build-armgba-arm64 --target pokedaisy_gba_libretro -j$(nproc) \
               && cp build-armgba-arm64/pokedaisy_gba_libretro.so /output/cores64/
             ' || echo "::warning::arm64 GBA build failed for pokedaisy"
-          git -C pokedaisy/third_party/zlib checkout -- . 2>/dev/null || true
+          git -C pokedaisy/third_party/zlib checkout -- .
+          docker run --rm -v ${{ github.workspace }}/pokedaisy:/pokedaisy -v ${{ github.workspace }}/output:/output -w /pokedaisy cores-arm64 \
+            bash -c '
+              apt-get update \
+              && apt-get install -y --no-install-recommends python3 \
+              && cmake -S linux/libretro-ds -B build-ds-arm64 -DCMAKE_BUILD_TYPE=Release \
+                -DBUILD_TESTING=OFF -DCMAKE_TOOLCHAIN_FILE=/pokedaisy/libretro/aarch64.cmake \
+              && cmake --build build-ds-arm64 --target pokedaisy_ds_libretro -j$(nproc) \
+              && cp build-ds-arm64/pokedaisy_ds_libretro.so /output/cores64/
+            ' || echo "::warning::arm64 DS build failed for pokedaisy"
 
       - name: Build armhf
         run: |
@@ -119,18 +144,29 @@ jobs:
               cmake -S libretro -B build-armhf -DCMAKE_BUILD_TYPE=Release \
                 -DCMAKE_C_FLAGS="-mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard" \
                 -DCMAKE_CXX_FLAGS="-mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard" \
-              && cmake --build build-armhf -j$(nproc) \
-              && cp build-armhf/pokedaisy_libretro.so /output/cores/pokedaisy_gbc_libretro.so
+              && cmake --build build-armhf --target pokedaisy_gbc_libretro -j$(nproc) \
+              && cp build-armhf/pokedaisy_gbc_libretro.so /output/cores/
             ' || echo "::warning::armhf GBC build failed for pokedaisy"
           docker run --rm -v ${{ github.workspace }}/pokedaisy:/pokedaisy -v ${{ github.workspace }}/output:/output -w /pokedaisy cores-armhf \
             bash -c '
               cmake -S libretro/armgba -B build-armgba-armhf -DCMAKE_BUILD_TYPE=Release \
                 -DCMAKE_C_FLAGS="-mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard" \
                 -DCMAKE_CXX_FLAGS="-mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard" \
-              && cmake --build build-armgba-armhf -j$(nproc) \
+              && cmake --build build-armgba-armhf --target pokedaisy_gba_libretro -j$(nproc) \
               && cp build-armgba-armhf/pokedaisy_gba_libretro.so /output/cores/
             ' || echo "::warning::armhf GBA build failed for pokedaisy"
-          git -C pokedaisy/third_party/zlib checkout -- . 2>/dev/null || true
+          git -C pokedaisy/third_party/zlib checkout -- .
+          docker run --rm -v ${{ github.workspace }}/pokedaisy:/pokedaisy -v ${{ github.workspace }}/output:/output -w /pokedaisy cores-armhf \
+            bash -c '
+              apt-get update \
+              && apt-get install -y --no-install-recommends python3 \
+              && cmake -S linux/libretro-ds -B build-ds-armhf -DCMAKE_BUILD_TYPE=Release \
+                -DBUILD_TESTING=OFF \
+                -DCMAKE_C_FLAGS="-mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard" \
+                -DCMAKE_CXX_FLAGS="-mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard" \
+              && cmake --build build-ds-armhf --target pokedaisy_ds_libretro -j$(nproc) \
+              && cp build-ds-armhf/pokedaisy_ds_libretro.so /output/cores/
+            ' || echo "::warning::armhf DS build failed for pokedaisy"
 
       - name: Check architectures and glibc floor
         run: |
@@ -161,8 +197,14 @@ jobs:
           CONTENTS=""
           [ -d cores64 ] && ls cores64/*.so >/dev/null 2>&1 && CONTENTS="$CONTENTS cores64/"
           [ -d cores ] && ls cores/*.so >/dev/null 2>&1 && CONTENTS="$CONTENTS cores/"
-          CONTENTS="$CONTENTS pokedaisy_gbc.info pokedaisy_gba.info"
-          if [ "$CONTENTS" != " pokedaisy_gbc.info pokedaisy_gba.info" ]; then
+          for pair in "pokedaisy_gbc_libretro.so:pokedaisy_gbc.info" "pokedaisy_gba_libretro.so:pokedaisy_gba.info" "pokedaisy_ds_libretro.so:pokedaisy_ds.info"; do
+            core="${pair%%:*}"
+            info="${pair#*:}"
+            if [ -f "cores64/$core" ] || [ -f "cores/$core" ]; then
+              CONTENTS="$CONTENTS $info"
+            fi
+          done
+          if [ -n "$CONTENTS" ]; then
             rm -f pokedaisy_libretro.zip
             zip -r pokedaisy_libretro.zip $CONTENTS
             gh release upload "beta-${{ github.ref_name }}" pokedaisy_libretro.zip --clobber
