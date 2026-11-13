@@ -62,6 +62,7 @@ jobs:
             git -C pokedaisy checkout "$REF"
           fi
           git -C pokedaisy submodule update --init third_party/mgba third_party/armgba third_party/zlib
+          git -C pokedaisy submodule update --remote third_party/armgba
           git -C pokedaisy submodule update --init --recursive third_party/dsperate-lr
           mkdir -p output
           cat > output/pokedaisy_gbc.info <<'EOF'
