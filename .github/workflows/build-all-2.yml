@@ -86,9 +86,6 @@ jobs:
   core_retro8:
     uses: ./.github/workflows/build-retro8.yml
 
-  core_sameduck:
-    uses: ./.github/workflows/build-sameduck.yml
-
   core_snes9x:
     uses: ./.github/workflows/build-snes9x.yml
 
