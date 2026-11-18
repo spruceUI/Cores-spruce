@@ -55,7 +55,8 @@ jobs:
           fi
           git -C armnes submodule update --init --recursive
           mkdir -p output
-          cp armnes/libretro/armnes_libretro.info output/
+          mkdir -p output/info
+          cp armnes/libretro/armnes_libretro.info output/info/
 
       - name: Build arm64
         run: |
@@ -104,7 +105,7 @@ jobs:
           CONTENTS=""
           [ -f cores64/armnes_libretro.so ] && CONTENTS="$CONTENTS cores64/"
           [ -f cores/armnes_libretro.so ] && CONTENTS="$CONTENTS cores/"
-          [ -f armnes_libretro.info ] && CONTENTS="$CONTENTS armnes_libretro.info"
+          [ -f info/armnes_libretro.info ] && CONTENTS="$CONTENTS info/"
           if [ -f cores64/armnes_libretro.so ] || [ -f cores/armnes_libretro.so ]; then
             zip -r armnes_libretro.zip $CONTENTS
             gh release upload "beta-${{ github.ref_name }}" armnes_libretro.zip --clobber

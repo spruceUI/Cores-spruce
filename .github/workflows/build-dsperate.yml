@@ -107,7 +107,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           cd output
-          cat > dsperate_libretro.info <<'EOF'
+          mkdir -p info
+          cat > info/dsperate_libretro.info <<'EOF'
           display_name = "Nintendo - DS (DSperate)"
           authors = "beebono|thwonp"
           supported_extensions = "nds"
@@ -119,5 +120,5 @@ jobs:
           systemname = "Nintendo DS"
           systemid = "nds"
           EOF
-          zip -r dsperate_libretro.zip cores64/ dsperate_libretro.info
+          zip -r dsperate_libretro.zip cores64/ info/
           gh release upload "beta-${{ github.ref_name }}" dsperate_libretro.zip --clobber

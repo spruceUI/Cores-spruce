@@ -75,7 +75,7 @@ jobs:
       - name: Grab info file
         run: |
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \
-            bash -c 'cp dist/info/fuse_libretro.info /output/ 2>/dev/null || true'
+            bash -c 'mkdir -p /output/info && cp dist/info/fuse_libretro.info /output/info/ 2>/dev/null || true'
 
       - name: Package and upload
         env:
@@ -85,7 +85,7 @@ jobs:
           CONTENTS=""
           [ -f cores64/fuse_libretro.so ] && CONTENTS="$CONTENTS cores64/"
           [ -f cores/fuse_libretro.so ] && CONTENTS="$CONTENTS cores/"
-          [ -f fuse_libretro.info ] && CONTENTS="$CONTENTS fuse_libretro.info"
+          [ -f info/fuse_libretro.info ] && CONTENTS="$CONTENTS info/"
           if [ -n "$CONTENTS" ]; then
             zip -r fuse_libretro.zip $CONTENTS
             gh release upload "beta-${{ github.ref_name }}" fuse_libretro.zip --clobber

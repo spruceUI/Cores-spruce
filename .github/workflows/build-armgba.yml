@@ -54,7 +54,8 @@ jobs:
             git -C armgba checkout "$REF"
           fi
           mkdir -p output
-          cp armgba/libretro/armgba_libretro.info output/
+          mkdir -p output/info
+          cp armgba/libretro/armgba_libretro.info output/info/
 
       - name: Build arm64
         run: |
@@ -103,7 +104,7 @@ jobs:
           CONTENTS=""
           [ -f cores64/armgba_libretro.so ] && CONTENTS="$CONTENTS cores64/"
           [ -f cores/armgba_libretro.so ] && CONTENTS="$CONTENTS cores/"
-          [ -f armgba_libretro.info ] && CONTENTS="$CONTENTS armgba_libretro.info"
+          [ -f info/armgba_libretro.info ] && CONTENTS="$CONTENTS info/"
           if [ -f cores64/armgba_libretro.so ] || [ -f cores/armgba_libretro.so ]; then
             zip -r armgba_libretro.zip $CONTENTS
             gh release upload "beta-${{ github.ref_name }}" armgba_libretro.zip --clobber

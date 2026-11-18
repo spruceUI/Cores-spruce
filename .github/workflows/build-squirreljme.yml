@@ -71,7 +71,7 @@ jobs:
       - name: Grab info file
         run: |
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \
-            bash -c 'cp dist/info/squirreljme_libretro.info /output/ 2>/dev/null || true'
+            bash -c 'mkdir -p /output/info && cp dist/info/squirreljme_libretro.info /output/info/ 2>/dev/null || true'
 
       - name: Package and upload
         env:
@@ -81,7 +81,7 @@ jobs:
           CONTENTS=""
           [ -f cores64/squirreljme_libretro.so ] && CONTENTS="$CONTENTS cores64/"
           [ -f cores/squirreljme_libretro.so ] && CONTENTS="$CONTENTS cores/"
-          [ -f squirreljme_libretro.info ] && CONTENTS="$CONTENTS squirreljme_libretro.info"
+          [ -f info/squirreljme_libretro.info ] && CONTENTS="$CONTENTS info/"
           if [ -n "$CONTENTS" ]; then
             zip -r squirreljme_libretro.zip $CONTENTS
             gh release upload "beta-${{ github.ref_name }}" squirreljme_libretro.zip --clobber

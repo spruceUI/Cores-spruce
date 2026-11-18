@@ -51,7 +51,8 @@ jobs:
           fi
           git -C armn64 submodule update --init --recursive
           mkdir -p output/cores64
-          cp armn64/libretro/armn64_libretro.info output/
+          mkdir -p output/info
+          cp armn64/libretro/armn64_libretro.info output/info/
 
       # No armhf: 32-bit ARM has no recompiler. ARMN64_TUNE targets ARMv8.2, which the A133 and H700 lack.
       - name: Build arm64
@@ -75,5 +76,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           cd output
-          zip -r armn64_libretro.zip cores64/ armn64_libretro.info
+          zip -r armn64_libretro.zip cores64/ info/
           gh release upload "beta-${{ github.ref_name }}" armn64_libretro.zip --clobber

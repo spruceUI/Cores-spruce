@@ -75,7 +75,7 @@ jobs:
       - name: Grab info file
         run: |
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \
-            bash -c 'cp dist/info/freeintv_libretro.info /output/ 2>/dev/null || true'
+            bash -c 'mkdir -p /output/info && cp dist/info/freeintv_libretro.info /output/info/ 2>/dev/null || true'
 
       - name: Package and upload
         env:
@@ -85,7 +85,7 @@ jobs:
           CONTENTS=""
           [ -f cores64/freeintv_libretro.so ] && CONTENTS="$CONTENTS cores64/"
           [ -f cores/freeintv_libretro.so ] && CONTENTS="$CONTENTS cores/"
-          [ -f freeintv_libretro.info ] && CONTENTS="$CONTENTS freeintv_libretro.info"
+          [ -f info/freeintv_libretro.info ] && CONTENTS="$CONTENTS info/"
           if [ -n "$CONTENTS" ]; then
             zip -r freeintv_libretro.zip $CONTENTS
             gh release upload "beta-${{ github.ref_name }}" freeintv_libretro.zip --clobber

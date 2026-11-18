@@ -83,7 +83,7 @@ jobs:
       - name: Grab info file
         run: |
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \
-            bash -c 'cp dist/info/vecx_libretro.info /output/ 2>/dev/null || true'
+            bash -c 'mkdir -p /output/info && cp dist/info/vecx_libretro.info /output/info/ 2>/dev/null || true'
 
       - name: Package and upload
         env:
@@ -93,7 +93,7 @@ jobs:
           CONTENTS=""
           [ -f cores64/vecx_libretro.so ] && CONTENTS="$CONTENTS cores64/"
           [ -f cores/vecx_libretro.so ] && CONTENTS="$CONTENTS cores/"
-          [ -f vecx_libretro.info ] && CONTENTS="$CONTENTS vecx_libretro.info"
+          [ -f info/vecx_libretro.info ] && CONTENTS="$CONTENTS info/"
           if [ -n "$CONTENTS" ]; then
             zip -r vecx_libretro.zip $CONTENTS
             gh release upload "beta-${{ github.ref_name }}" vecx_libretro.zip --clobber

@@ -64,8 +64,8 @@ jobs:
           git -C pokedaisy submodule update --init third_party/mgba third_party/armgba third_party/zlib
           git -C pokedaisy submodule update --remote third_party/armgba
           git -C pokedaisy submodule update --init --recursive third_party/dsperate-lr
-          mkdir -p output
-          cat > output/pokedaisy_gbc.info <<'EOF'
+          mkdir -p output/info
+          cat > output/info/pokedaisy_gbc.info <<'EOF'
           display_name = "Pokemon - PokeDaisy (GB/GBC, mGBA)"
           authors = "thwonp|endrift"
           supported_extensions = "gb|gbc"
@@ -80,7 +80,7 @@ jobs:
           database = "Nintendo - Game Boy|Nintendo - Game Boy Color"
           needs_fullpath = "false"
           EOF
-          cat > output/pokedaisy_gba.info <<'EOF'
+          cat > output/info/pokedaisy_gba.info <<'EOF'
           display_name = "Pokemon - PokeDaisy (GBA, armGBA)"
           authors = "thwonp|endrift"
           supported_extensions = "gba"
@@ -95,7 +95,7 @@ jobs:
           database = "Nintendo - Game Boy Advance"
           needs_fullpath = "false"
           EOF
-          cat > output/pokedaisy_ds.info <<'EOF'
+          cat > output/info/pokedaisy_ds.info <<'EOF'
           display_name = "Pokemon - PokeDaisy (Nintendo DS)"
           authors = "thwonp"
           supported_extensions = "nds"
@@ -194,15 +194,15 @@ jobs:
         run: |
           cd output
           CONTENTS=""
+          INCLUDE_INFO=false
           [ -d cores64 ] && ls cores64/*.so >/dev/null 2>&1 && CONTENTS="$CONTENTS cores64/"
           [ -d cores ] && ls cores/*.so >/dev/null 2>&1 && CONTENTS="$CONTENTS cores/"
-          for pair in "pokedaisy_gbc_libretro.so:pokedaisy_gbc.info" "pokedaisy_gba_libretro.so:pokedaisy_gba.info" "pokedaisy_ds_libretro.so:pokedaisy_ds.info"; do
-            core="${pair%%:*}"
-            info="${pair#*:}"
+          for core in pokedaisy_gbc_libretro.so pokedaisy_gba_libretro.so pokedaisy_ds_libretro.so; do
             if [ -f "cores64/$core" ] || [ -f "cores/$core" ]; then
-              CONTENTS="$CONTENTS $info"
+              INCLUDE_INFO=true
             fi
           done
+          $INCLUDE_INFO && CONTENTS="$CONTENTS info/"
           if [ -n "$CONTENTS" ]; then
             rm -f pokedaisy_libretro.zip
             zip -r pokedaisy_libretro.zip $CONTENTS

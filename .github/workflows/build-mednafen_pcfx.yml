@@ -118,5 +118,5 @@ jobs:
           zip -r mednafen_pcfx_libretro.zip \
             cores64/mednafen_pcfx_libretro.so \
             cores/mednafen_pcfx_libretro.so \
-            mednafen_pcfx_libretro.info
+            info/mednafen_pcfx_libretro.info
           gh release upload "beta-${{ github.ref_name }}" mednafen_pcfx_libretro.zip --clobber

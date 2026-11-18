@@ -75,7 +75,7 @@ jobs:
       - name: Grab info file
         run: |
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \
-            bash -c 'cp dist/info/gearboy_libretro.info /output/ 2>/dev/null || true'
+            bash -c 'mkdir -p /output/info && cp dist/info/gearboy_libretro.info /output/info/ 2>/dev/null || true'
 
       - name: Package and upload
         env:
@@ -85,7 +85,7 @@ jobs:
           CONTENTS=""
           [ -f cores64/gearboy_libretro.so ] && CONTENTS="$CONTENTS cores64/"
           [ -f cores/gearboy_libretro.so ] && CONTENTS="$CONTENTS cores/"
-          [ -f gearboy_libretro.info ] && CONTENTS="$CONTENTS gearboy_libretro.info"
+          [ -f info/gearboy_libretro.info ] && CONTENTS="$CONTENTS info/"
           if [ -n "$CONTENTS" ]; then
             zip -r gearboy_libretro.zip $CONTENTS
             gh release upload "beta-${{ github.ref_name }}" gearboy_libretro.zip --clobber

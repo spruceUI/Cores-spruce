@@ -64,7 +64,9 @@ jobs:
             && zig objcopy --strip-all gametank_libretro.so ${{ github.workspace }}/output/cores/gametank_libretro.so
 
       - name: Grab info file
-        run: cp gametank-libretro/gametank_libretro.info output/ 2>/dev/null || true
+        run: |
+          mkdir -p output/info
+          cp gametank-libretro/gametank_libretro.info output/info/ 2>/dev/null || true
 
       - name: Package and upload
         env:
@@ -74,7 +76,7 @@ jobs:
           CONTENTS=""
           [ -f cores64/gametank_libretro.so ] && CONTENTS="$CONTENTS cores64/"
           [ -f cores/gametank_libretro.so ] && CONTENTS="$CONTENTS cores/"
-          [ -f gametank_libretro.info ] && CONTENTS="$CONTENTS gametank_libretro.info"
+          [ -f info/gametank_libretro.info ] && CONTENTS="$CONTENTS info/"
           if [ -n "$CONTENTS" ]; then
             zip -r gametank_libretro.zip $CONTENTS
             gh release upload "beta-${{ github.ref_name }}" gametank_libretro.zip --clobber

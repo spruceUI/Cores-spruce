@@ -54,7 +54,8 @@ jobs:
             git -C gloopy checkout "$REF"
           fi
           mkdir -p output
-          cp gloopy/gloopy_libretro.info output/
+          mkdir -p output/info
+          cp gloopy/gloopy_libretro.info output/info/
 
       - name: Build arm64
         run: |
@@ -85,7 +86,7 @@ jobs:
           [ -f cores64/gloopy_libretro.so ] && CONTENTS="$CONTENTS cores64/"
           [ -f cores/gloopy_libretro.so ] && CONTENTS="$CONTENTS cores/"
           if [ -n "$CONTENTS" ]; then
-            zip -r gloopy_libretro.zip $CONTENTS gloopy_libretro.info
+            zip -r gloopy_libretro.zip $CONTENTS info/
             gh release upload "beta-${{ github.ref_name }}" gloopy_libretro.zip --clobber
           else
             echo "::error::No builds succeeded for gloopy"

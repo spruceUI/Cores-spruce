@@ -75,7 +75,7 @@ jobs:
       - name: Grab info file
         run: |
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \
-            bash -c 'cp dist/info/puae2021_libretro.info /output/ 2>/dev/null || true'
+            bash -c 'mkdir -p /output/info && cp dist/info/puae2021_libretro.info /output/info/ 2>/dev/null || true'
 
       - name: Package and upload
         env:
@@ -85,7 +85,7 @@ jobs:
           CONTENTS=""
           [ -f cores64/puae2021_libretro.so ] && CONTENTS="$CONTENTS cores64/"
           [ -f cores/puae2021_libretro.so ] && CONTENTS="$CONTENTS cores/"
-          [ -f puae2021_libretro.info ] && CONTENTS="$CONTENTS puae2021_libretro.info"
+          [ -f info/puae2021_libretro.info ] && CONTENTS="$CONTENTS info/"
           if [ -n "$CONTENTS" ]; then
             zip -r puae2021_libretro.zip $CONTENTS
             gh release upload "beta-${{ github.ref_name }}" puae2021_libretro.zip --clobber

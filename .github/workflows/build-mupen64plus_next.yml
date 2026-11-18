@@ -65,7 +65,7 @@ jobs:
       - name: Grab info file
         run: |
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \
-            bash -c 'cp dist/info/mupen64plus_next_libretro.info /output/ 2>/dev/null || true'
+            bash -c 'mkdir -p /output/info && cp dist/info/mupen64plus_next_libretro.info /output/info/ 2>/dev/null || true'
 
       - name: Package and upload
         env:
@@ -75,7 +75,7 @@ jobs:
           CONTENTS=""
           [ -f cores64/mupen64plus_next_libretro.so ] && CONTENTS="$CONTENTS cores64/"
           [ -f cores/mupen64plus_next_libretro.so ] && CONTENTS="$CONTENTS cores/"
-          [ -f mupen64plus_next_libretro.info ] && CONTENTS="$CONTENTS mupen64plus_next_libretro.info"
+          [ -f info/mupen64plus_next_libretro.info ] && CONTENTS="$CONTENTS info/"
           if [ -n "$CONTENTS" ]; then
             zip -r mupen64plus_next_libretro.zip $CONTENTS
             gh release upload "beta-${{ github.ref_name }}" mupen64plus_next_libretro.zip --clobber

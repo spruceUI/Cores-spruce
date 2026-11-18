@@ -75,7 +75,7 @@ jobs:
       - name: Grab info file
         run: |
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \
-            bash -c 'cp dist/info/fceumm_libretro.info /output/ 2>/dev/null || true'
+            bash -c 'mkdir -p /output/info && cp dist/info/fceumm_libretro.info /output/info/ 2>/dev/null || true'
 
       - name: Package and upload
         env:
@@ -85,7 +85,7 @@ jobs:
           CONTENTS=""
           [ -f cores64/fceumm_libretro.so ] && CONTENTS="$CONTENTS cores64/"
           [ -f cores/fceumm_libretro.so ] && CONTENTS="$CONTENTS cores/"
-          [ -f fceumm_libretro.info ] && CONTENTS="$CONTENTS fceumm_libretro.info"
+          [ -f info/fceumm_libretro.info ] && CONTENTS="$CONTENTS info/"
           if [ -n "$CONTENTS" ]; then
             zip -r fceumm_libretro.zip $CONTENTS
             gh release upload "beta-${{ github.ref_name }}" fceumm_libretro.zip --clobber

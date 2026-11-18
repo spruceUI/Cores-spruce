@@ -50,7 +50,8 @@ jobs:
             git -C yabadabadoo checkout "$REF"
           fi
           mkdir -p output
-          cp yabadabadoo/packaging/onion/RetroArch/.retroarch/cores/yabadabadoo_libretro.info output/
+          mkdir -p output/info
+          cp yabadabadoo/packaging/onion/RetroArch/.retroarch/cores/yabadabadoo_libretro.info output/info/
 
       # armhf only: the core targets the Cortex-A7 Miyoo Mini and A30.
       - name: Build armhf
@@ -80,5 +81,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           cd output
-          zip -r yabadabadoo_libretro.zip cores/ yabadabadoo_libretro.info
+          zip -r yabadabadoo_libretro.zip cores/ info/
           gh release upload "beta-${{ github.ref_name }}" yabadabadoo_libretro.zip --clobber
