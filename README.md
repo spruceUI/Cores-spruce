@@ -15,6 +15,7 @@ Build bot for libretro cores targeting spruceOS handheld devices. Builds 32-bit 
 - Each core has its own GitHub Actions workflow — trigger individually or use **Build All Cores** to build everything in parallel
 - Output: one zip per core containing `cores/` (armhf), `cores64/` (arm64), and a `.info` metadata file
 - Built cores are uploaded to the `beta-{branch}` release
+- Some workflows default `core_ref` to the commit that [cores-experimental](https://github.com/spruceUI/cores-experimental) builds and load-tests, with its flags and patches (`patches/<core>/`); a blank `core_ref` builds upstream's latest
 
 ## Usage
 

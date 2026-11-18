@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       core_ref:
-        description: 'Core git ref (commit/tag/branch, blank for latest)'
-        default: ''
+        description: 'Core git ref (commit/tag/branch); default: the commit cores-experimental tested, blank for latest'
+        default: '98c1b0d877542b01314b3b04272282ba223b65b3'
   workflow_call:
     inputs:
       core_ref:
         type: string
-        default: ''
+        default: '98c1b0d877542b01314b3b04272282ba223b65b3'
 
 permissions:
   contents: write
@@ -51,26 +51,16 @@ jobs:
           mkdir -p output/cores64
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \
             bash -c '
+              set -e
               ./libretro-fetch.sh mupen64plus_next
               REF="${{ inputs.core_ref }}"
               if [ -n "$REF" ]; then
-                cd libretro-mupen64plus_next && git fetch origin && git checkout "$REF" && cd ..
+                git -C libretro-mupen64plus_next fetch origin "$REF"
+                git -C libretro-mupen64plus_next checkout --detach FETCH_HEAD
               fi
+              export MAKEFLAGS="FORCE_GLES3=1 WITH_DYNAREC=aarch64"
               ./libretro-build.sh mupen64plus_next
               cp dist/unix/mupen64plus_next_libretro.so /output/cores64/
-            '
-      - name: Build armhf
-        run: |
-          mkdir -p output/cores
-          docker run --rm -v ${{ github.workspace }}/output:/output cores-armhf \
-            bash -c '
-              ./libretro-fetch.sh mupen64plus_next
-              REF="${{ inputs.core_ref }}"
-              if [ -n "$REF" ]; then
-                cd libretro-mupen64plus_next && git fetch origin && git checkout "$REF" && cd ..
-              fi
-              ./libretro-build.sh mupen64plus_next
-              cp dist/unix/mupen64plus_next_libretro.so /output/cores/
             '
       - name: Grab info file
         run: |

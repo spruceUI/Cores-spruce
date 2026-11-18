@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       core_ref:
-        description: 'Core git ref (commit/tag/branch, blank for latest)'
-        default: ''
+        description: 'Core git ref (commit/tag/branch); default: the commit cores-experimental tested, blank for latest'
+        default: '4920879d2f09a78cdf855403c349457cee1c31da'
   workflow_call:
     inputs:
       core_ref:
         type: string
-        default: ''
+        default: '4920879d2f09a78cdf855403c349457cee1c31da'
 
 permissions:
   contents: write
@@ -51,11 +51,15 @@ jobs:
           mkdir -p output/cores64
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \
             bash -c '
+              set -e
               ./libretro-fetch.sh ffmpeg
               REF="${{ inputs.core_ref }}"
               if [ -n "$REF" ]; then
-                cd libretro-ffmpeg && git fetch origin && git checkout "$REF" && cd ..
+                git -C libretro-ffmpeg fetch origin "$REF"
+                git -C libretro-ffmpeg checkout --detach FETCH_HEAD
+                git -C libretro-ffmpeg submodule update --init --recursive
               fi
+              export MAKEFLAGS="--output-sync=recurse ARCH_AARCH64=0 ARCH_ARM=0 ARCH_X86=0 ARCH_X86_64=0 HAVE_SSA=0 LIBRETRO_EMBED_FFMPEG=1 OPENGL=0"
               ./libretro-build.sh ffmpeg
               cp dist/unix/ffmpeg_libretro.so /output/cores64/
             '
@@ -64,11 +68,15 @@ jobs:
           mkdir -p output/cores
           docker run --rm -v ${{ github.workspace }}/output:/output cores-armhf \
             bash -c '
+              set -e
               ./libretro-fetch.sh ffmpeg
               REF="${{ inputs.core_ref }}"
               if [ -n "$REF" ]; then
-                cd libretro-ffmpeg && git fetch origin && git checkout "$REF" && cd ..
+                git -C libretro-ffmpeg fetch origin "$REF"
+                git -C libretro-ffmpeg checkout --detach FETCH_HEAD
+                git -C libretro-ffmpeg submodule update --init --recursive
               fi
+              export MAKEFLAGS="--output-sync=recurse ARCH_AARCH64=0 ARCH_ARM=0 ARCH_X86=0 ARCH_X86_64=0 HAVE_SSA=0 LIBRETRO_EMBED_FFMPEG=1 OPENGL=0"
               ./libretro-build.sh ffmpeg
               cp dist/unix/ffmpeg_libretro.so /output/cores/
             '

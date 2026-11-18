@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       core_ref:
-        description: 'Core git ref (commit/tag/branch, blank for latest)'
-        default: ''
+        description: 'Core git ref (commit/tag/branch); default: the commit cores-experimental tested, blank for latest'
+        default: '9d7716aa20cbdf49024f42980c33c7cd366e784f'
   workflow_call:
     inputs:
       core_ref:
         type: string
-        default: ''
+        default: '9d7716aa20cbdf49024f42980c33c7cd366e784f'
 
 permissions:
   contents: write
@@ -51,10 +51,13 @@ jobs:
           mkdir -p output/cores64
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \
             bash -c '
+              set -e
               ./libretro-fetch.sh fbneo
               REF="${{ inputs.core_ref }}"
               if [ -n "$REF" ]; then
-                cd libretro-fbneo && git fetch origin && git checkout "$REF" && cd ..
+                git -C libretro-fbneo fetch origin "$REF"
+                git -C libretro-fbneo checkout --detach FETCH_HEAD
+                git -C libretro-fbneo submodule update --init --recursive
               fi
               ./libretro-build.sh fbneo
               cp dist/unix/fbneo_libretro.so /output/cores64/
@@ -64,11 +67,16 @@ jobs:
           mkdir -p output/cores
           docker run --rm -v ${{ github.workspace }}/output:/output cores-armhf \
             bash -c '
+              set -e
               ./libretro-fetch.sh fbneo
               REF="${{ inputs.core_ref }}"
               if [ -n "$REF" ]; then
-                cd libretro-fbneo && git fetch origin && git checkout "$REF" && cd ..
+                git -C libretro-fbneo fetch origin "$REF"
+                git -C libretro-fbneo checkout --detach FETCH_HEAD
+                git -C libretro-fbneo submodule update --init --recursive
               fi
+              # The A30 sysroot predates these HWCAP2 names that the lzma in libchdr uses.
+              export CFLAGS="-DHWCAP2_AES=1 -DHWCAP2_CRC32=16 -DHWCAP2_SHA1=4 -DHWCAP2_SHA2=8" CXXFLAGS="-DHWCAP2_AES=1 -DHWCAP2_CRC32=16 -DHWCAP2_SHA1=4 -DHWCAP2_SHA2=8"
               ./libretro-build.sh fbneo
               cp dist/unix/fbneo_libretro.so /output/cores/
             '

@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       core_ref:
-        description: 'Core git ref (commit/tag/branch, blank for latest)'
-        default: ''
+        description: 'Core git ref (commit/tag/branch); default: the commit cores-experimental tested, blank for latest'
+        default: '650c30ea2203636a1716675854d11c608ed6eacc'
   workflow_call:
     inputs:
       core_ref:
         type: string
-        default: ''
+        default: '650c30ea2203636a1716675854d11c608ed6eacc'
 
 permissions:
   contents: write
@@ -55,14 +55,17 @@ jobs:
               ./libretro-fetch.sh mednafen_pcfx
               REF="${{ inputs.core_ref }}"
               if [ -n "$REF" ]; then
-                cd libretro-beetle_pcfx && git fetch origin && git checkout "$REF" && cd ..
+                git -C libretro-mednafen_pcfx fetch origin "$REF"
+                git -C libretro-mednafen_pcfx checkout --detach FETCH_HEAD
+                git -C libretro-mednafen_pcfx submodule update --init --recursive
               fi
-              make -C libretro-beetle_pcfx -j"$(nproc)" \
+              make -C libretro-mednafen_pcfx -j"$(nproc)" \
+                IS_X86=0 \
                 platform=unix \
                 CC=aarch64-linux-gnu-gcc \
                 CXX=aarch64-linux-gnu-g++
-              test -s libretro-beetle_pcfx/mednafen_pcfx_libretro.so
-              cp libretro-beetle_pcfx/mednafen_pcfx_libretro.so /output/cores64/
+              test -s libretro-mednafen_pcfx/mednafen_pcfx_libretro.so
+              cp libretro-mednafen_pcfx/mednafen_pcfx_libretro.so /output/cores64/
             '
 
       - name: Build armhf
@@ -74,15 +77,18 @@ jobs:
               ./libretro-fetch.sh mednafen_pcfx
               REF="${{ inputs.core_ref }}"
               if [ -n "$REF" ]; then
-                cd libretro-beetle_pcfx && git fetch origin && git checkout "$REF" && cd ..
+                git -C libretro-mednafen_pcfx fetch origin "$REF"
+                git -C libretro-mednafen_pcfx checkout --detach FETCH_HEAD
+                git -C libretro-mednafen_pcfx submodule update --init --recursive
               fi
-              make -C libretro-beetle_pcfx -j"$(nproc)" \
+              make -C libretro-mednafen_pcfx -j"$(nproc)" \
+                IS_X86=0 \
                 platform=armv7-neon-hardfloat \
                 CC=arm-a30-linux-gnueabihf-gcc \
                 CXX=arm-a30-linux-gnueabihf-g++ \
                 EXTRA_GCC_FLAGS="-mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard"
-              test -s libretro-beetle_pcfx/mednafen_pcfx_libretro.so
-              cp libretro-beetle_pcfx/mednafen_pcfx_libretro.so /output/cores/
+              test -s libretro-mednafen_pcfx/mednafen_pcfx_libretro.so
+              cp libretro-mednafen_pcfx/mednafen_pcfx_libretro.so /output/cores/
             '
 
       - name: Grab info file

@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       core_ref:
-        description: 'Core git ref (commit/tag/branch, blank for latest)'
-        default: ''
+        description: 'Core git ref (commit/tag/branch); default: the commit cores-experimental tested, blank for latest'
+        default: '0582a5eb8a442824c8aad0495443824b3c8afb08'
   workflow_call:
     inputs:
       core_ref:
         type: string
-        default: ''
+        default: '0582a5eb8a442824c8aad0495443824b3c8afb08'
 
 permissions:
   contents: write
@@ -46,54 +46,21 @@ jobs:
           gunzip -c cores-arm64.tar.gz | docker load
           gunzip -c cores-armhf.tar.gz | docker load
 
+      # scripts/build-easyrpg.sh: cores-experimental's recipe, with its static dependencies built in the image.
       - name: Build arm64
+        env:
+          CORE_REF: ${{ inputs.core_ref }}
         run: |
           mkdir -p output/cores64
-          docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \
-          bash -c '
-            set -e
-            apt-get update
-            apt-get install -y --no-install-recommends libinih-dev pkg-config
-
-            ./libretro-fetch.sh easyrpg
-              REF="${{ inputs.core_ref }}"
-              if [ -n "$REF" ]; then
-                cd libretro-easyrpg && git fetch origin && git checkout "$REF" && cd ..
-              fi
-              cd libretro-easyrpg
-              git submodule update --init --recursive
-              cmake -S . -B build \
-                -DPLAYER_TARGET_PLATFORM=libretro \
-                -DPLAYER_BUILD_LIBLCF=ON \
-                -DBUILD_SHARED_LIBS=ON \
-                -DCMAKE_BUILD_TYPE=Release
-              cmake --build build --target easyrpg_libretro --parallel "$(nproc)"
-              cp build/easyrpg_libretro.so /output/cores64/
-            '
+          docker run --rm -v ${{ github.workspace }}:/work:ro -v ${{ github.workspace }}/output:/output cores-arm64 \
+            bash /work/scripts/build-easyrpg.sh arm64 "$CORE_REF" /output/cores64
       - name: Build armhf
+        env:
+          CORE_REF: ${{ inputs.core_ref }}
         run: |
           mkdir -p output/cores
-          docker run --rm -v ${{ github.workspace }}/output:/output cores-armhf \
-          bash -c '
-            set -e
-            apt-get update
-            apt-get install -y --no-install-recommends libinih-dev pkg-config
-
-            ./libretro-fetch.sh easyrpg
-              REF="${{ inputs.core_ref }}"
-              if [ -n "$REF" ]; then
-                cd libretro-easyrpg && git fetch origin && git checkout "$REF" && cd ..
-              fi
-              cd libretro-easyrpg
-              git submodule update --init --recursive
-              cmake -S . -B build \
-                -DPLAYER_TARGET_PLATFORM=libretro \
-                -DPLAYER_BUILD_LIBLCF=ON \
-                -DBUILD_SHARED_LIBS=ON \
-                -DCMAKE_BUILD_TYPE=Release
-              cmake --build build --target easyrpg_libretro --parallel "$(nproc)"
-              cp build/easyrpg_libretro.so /output/cores/
-            '
+          docker run --rm -v ${{ github.workspace }}:/work:ro -v ${{ github.workspace }}/output:/output cores-armhf \
+            bash /work/scripts/build-easyrpg.sh armhf "$CORE_REF" /output/cores
       - name: Grab info file
         run: |
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \

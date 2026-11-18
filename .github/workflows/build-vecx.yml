@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       core_ref:
-        description: 'Core git ref (commit/tag/branch, blank for latest)'
-        default: ''
+        description: 'Core git ref (commit/tag/branch); default: the commit cores-experimental tested, blank for latest'
+        default: '8f671cc9d737f2890c3ce19e177e2984dcae121f'
   workflow_call:
     inputs:
       core_ref:
         type: string
-        default: ''
+        default: '8f671cc9d737f2890c3ce19e177e2984dcae121f'
 
 permissions:
   contents: write
@@ -51,11 +51,15 @@ jobs:
           mkdir -p output/cores64
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \
             bash -c '
+              set -e
               ./libretro-fetch.sh vecx
               REF="${{ inputs.core_ref }}"
               if [ -n "$REF" ]; then
-                cd libretro-vecx && git fetch origin && git checkout "$REF" && cd ..
+                git -C libretro-vecx fetch origin "$REF"
+                git -C libretro-vecx checkout --detach FETCH_HEAD
+                git -C libretro-vecx submodule update --init --recursive
               fi
+              export MAKEFLAGS="HAS_GPU=0"
               ./libretro-build.sh vecx
               cp dist/unix/vecx_libretro.so /output/cores64/
             '
@@ -64,11 +68,15 @@ jobs:
           mkdir -p output/cores
           docker run --rm -v ${{ github.workspace }}/output:/output cores-armhf \
             bash -c '
+              set -e
               ./libretro-fetch.sh vecx
               REF="${{ inputs.core_ref }}"
               if [ -n "$REF" ]; then
-                cd libretro-vecx && git fetch origin && git checkout "$REF" && cd ..
+                git -C libretro-vecx fetch origin "$REF"
+                git -C libretro-vecx checkout --detach FETCH_HEAD
+                git -C libretro-vecx submodule update --init --recursive
               fi
+              export MAKEFLAGS="HAS_GPU=0"
               ./libretro-build.sh vecx
               cp dist/unix/vecx_libretro.so /output/cores/
             '
