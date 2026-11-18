@@ -58,8 +58,7 @@ jobs:
               fi
               ./libretro-build.sh gearsystem
               cp dist/unix/gearsystem_libretro.so /output/cores64/
-            ' || echo "::warning::arm64 build failed for gearsystem"
-
+            '
       - name: Build armhf
         run: |
           mkdir -p output/cores
@@ -72,8 +71,7 @@ jobs:
               fi
               ./libretro-build.sh gearsystem
               cp dist/unix/gearsystem_libretro.so /output/cores/
-            ' || echo "::warning::armhf build failed for gearsystem"
-
+            '
       - name: Grab info file
         run: |
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \

@@ -65,8 +65,7 @@ jobs:
               cmake -S . -B build-arm64 -DCMAKE_BUILD_TYPE=Release \
               && cmake --build build-arm64 -j$(nproc) --target armnes_arcade_libretro \
               && cp build-arm64/armnes_arcade_libretro.so /output/cores64/
-            ' || echo "::warning::arm64 build failed for armnes_arcade"
-
+            '
       - name: Build armhf
         run: |
           mkdir -p output/cores
@@ -77,8 +76,7 @@ jobs:
                 -DCMAKE_CXX_FLAGS="-mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard" \
               && cmake --build build-armhf -j$(nproc) --target armnes_arcade_libretro \
               && cp build-armhf/armnes_arcade_libretro.so /output/cores/
-            ' || echo "::warning::armhf build failed for armnes_arcade"
-
+            '
       - name: Check architectures and glibc floor
         run: |
           for so in output/cores64/armnes_arcade_libretro.so output/cores/armnes_arcade_libretro.so; do

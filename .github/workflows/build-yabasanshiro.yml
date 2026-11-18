@@ -64,8 +64,7 @@ jobs:
 
               ./libretro-build.sh yabasanshiro
               cp dist/unix/yabasanshiro_libretro.so /output/cores64/
-            ' || echo "::warning::arm64 build failed for yabasanshiro"
-
+            '
       - name: Build armhf
         run: |
           mkdir -p output/cores
@@ -84,8 +83,7 @@ jobs:
 
               ./libretro-build.sh yabasanshiro
               cp dist/unix/yabasanshiro_libretro.so /output/cores/
-            ' || echo "::warning::armhf build failed for yabasanshiro"
-
+            '
       - name: Grab info file
         run: |
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \

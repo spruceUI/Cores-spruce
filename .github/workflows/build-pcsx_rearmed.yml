@@ -58,8 +58,7 @@ jobs:
               fi
               ./libretro-build.sh pcsx_rearmed
               cp dist/unix/pcsx_rearmed_libretro.so /output/cores64/
-            ' || echo "::warning::arm64 build failed for pcsx_rearmed"
-
+            '
       - name: Build armhf
         run: |
           mkdir -p output/cores
@@ -72,8 +71,7 @@ jobs:
               fi
               ./libretro-build.sh pcsx_rearmed
               cp dist/unix/pcsx_rearmed_libretro.so /output/cores/
-            ' || echo "::warning::armhf build failed for pcsx_rearmed"
-
+            '
       - name: Grab info file
         run: |
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \

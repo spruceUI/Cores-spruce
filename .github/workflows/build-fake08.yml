@@ -57,8 +57,7 @@ jobs:
               [ -n "$REF" ] && git fetch origin && git checkout "$REF"
               make -C platform/libretro CC=${HOST_CC}-gcc CXX=${HOST_CC}-g++ -j$(nproc)
               cp platform/libretro/fake08_libretro.so /output/cores64/
-            ' || echo "::warning::arm64 build failed for fake08"
-
+            '
       - name: Build armhf
         run: |
           mkdir -p output/cores
@@ -70,8 +69,7 @@ jobs:
               [ -n "$REF" ] && git fetch origin && git checkout "$REF"
               make -C platform/libretro CC=${HOST_CC}-gcc CXX=${HOST_CC}-g++ -j$(nproc)
               cp platform/libretro/fake08_libretro.so /output/cores/
-            ' || echo "::warning::armhf build failed for fake08"
-
+            '
       - name: Package and upload
         env:
           GH_TOKEN: ${{ github.token }}

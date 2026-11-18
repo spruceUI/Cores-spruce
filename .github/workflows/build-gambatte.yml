@@ -58,8 +58,7 @@ jobs:
               fi
               HAVE_NETWORK=1 ./libretro-build.sh gambatte
               cp dist/unix/gambatte_libretro.so /output/cores64/
-            ' || echo "::warning::arm64 build failed for gambatte"
-
+            '
       - name: Build armhf
         run: |
           mkdir -p output/cores
@@ -72,8 +71,7 @@ jobs:
               fi
               HAVE_NETWORK=1 ./libretro-build.sh gambatte
               cp dist/unix/gambatte_libretro.so /output/cores/
-            ' || echo "::warning::armhf build failed for gambatte"
-
+            '
       - name: Grab info file
         run: |
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \

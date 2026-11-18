@@ -58,8 +58,7 @@ jobs:
               fi
               ./libretro-build.sh parallel_n64
               cp dist/unix/parallel_n64_libretro.so /output/cores64/
-            ' || echo "::warning::arm64 build failed for parallel_n64"
-
+            '
       - name: Build armhf
         run: |
           mkdir -p output/cores
@@ -72,8 +71,7 @@ jobs:
               fi
               ./libretro-build.sh parallel_n64
               cp dist/unix/parallel_n64_libretro.so /output/cores/
-            ' || echo "::warning::armhf build failed for parallel_n64"
-
+            '
       - name: Grab info file
         run: |
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \

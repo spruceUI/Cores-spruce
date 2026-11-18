@@ -63,8 +63,7 @@ jobs:
                 -DCMAKE_SYSTEM_PROCESSOR=aarch64
               make -j$(nproc)
               find . -name "*_libretro.so" -exec cp {} /output/cores64/km_duckswanstation_xtreme_amped_libretro.so \;
-            ' || echo "::warning::arm64 build failed for km_duckswanstation_xtreme_amped"
-
+            '
       - name: Build armhf
         run: |
           mkdir -p output/cores
@@ -82,8 +81,7 @@ jobs:
                 -DCMAKE_SYSTEM_PROCESSOR=arm
               make -j$(nproc)
               find . -name "*_libretro.so" -exec cp {} /output/cores/km_duckswanstation_xtreme_amped_libretro.so \;
-            ' || echo "::warning::armhf build failed for km_duckswanstation_xtreme_amped"
-
+            '
       - name: Package and upload
         env:
           GH_TOKEN: ${{ github.token }}

@@ -57,8 +57,7 @@ jobs:
               [ -n "$REF" ] && git fetch origin && git checkout "$REF"
               make platform=unix ARCH=aarch64 WITH_DYNAREC=aarch64 FORCE_GLES=1 CC=${HOST_CC}-gcc CXX=${HOST_CC}-g++ -j$(nproc)
               find . -name "*_libretro.so" -exec cp {} /output/cores64/km_parallel_n64_xtreme_amped_turbo_libretro.so \;
-            ' || echo "::warning::arm64 build failed for km_parallel_n64_xtreme_amped_turbo"
-
+            '
       - name: Build armhf
         run: |
           mkdir -p output/cores
@@ -70,8 +69,7 @@ jobs:
               [ -n "$REF" ] && git fetch origin && git checkout "$REF"
               make platform=unix ARCH=arm WITH_DYNAREC=arm FORCE_GLES=1 CC=${HOST_CC}-gcc CXX=${HOST_CC}-g++ -j$(nproc)
               find . -name "*_libretro.so" -exec cp {} /output/cores/km_parallel_n64_xtreme_amped_turbo_libretro.so \;
-            ' || echo "::warning::armhf build failed for km_parallel_n64_xtreme_amped_turbo"
-
+            '
       - name: Package and upload
         env:
           GH_TOKEN: ${{ github.token }}

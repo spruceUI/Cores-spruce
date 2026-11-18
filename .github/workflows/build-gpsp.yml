@@ -60,8 +60,7 @@ jobs:
               make -j$(nproc) platform=arm64 \
                 CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-g++
               cp gpsp_libretro.so /output/cores64/
-            ' || echo "::warning::arm64 build failed for gpsp"
-
+            '
       - name: Build armhf
         run: |
           mkdir -p output/cores
@@ -76,8 +75,7 @@ jobs:
               make -j$(nproc) platform=armv7hardfloat \
                 CC=arm-a30-linux-gnueabihf-gcc CXX=arm-a30-linux-gnueabihf-g++
               cp gpsp_libretro.so /output/cores/
-            ' || echo "::warning::armhf build failed for gpsp"
-
+            '
       - name: Grab info file
         run: |
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \

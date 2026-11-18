@@ -15,6 +15,51 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh workflow run build-all-1.yml --repo ${{ github.repository }}
-          gh workflow run build-all-2.yml --repo ${{ github.repository }}
-          gh workflow run build-all-3.yml --repo ${{ github.repository }}
+          set -euo pipefail
+
+          REPO="${{ github.repository }}"
+          REF="${{ github.ref_name }}"
+
+          previous_run() {
+            gh run list --repo "$REPO" --workflow "$1" --branch "$REF" \
+              --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // 0'
+          }
+
+          wait_for_new_run() {
+            local workflow="$1"
+            local previous="$2"
+            local run_id
+            for _ in $(seq 1 60); do
+              run_id=$(previous_run "$workflow")
+              if [ "$run_id" != "0" ] && [ "$run_id" != "$previous" ]; then
+                echo "$run_id"
+                return 0
+              fi
+              sleep 2
+            done
+            echo "::error::Timed out waiting for $workflow to start" >&2
+            return 1
+          }
+
+          PREVIOUS_1=$(previous_run build-all-1.yml)
+          PREVIOUS_2=$(previous_run build-all-2.yml)
+          PREVIOUS_3=$(previous_run build-all-3.yml)
+
+          gh workflow run build-all-1.yml --repo "$REPO" --ref "$REF"
+          gh workflow run build-all-2.yml --repo "$REPO" --ref "$REF"
+          gh workflow run build-all-3.yml --repo "$REPO" --ref "$REF"
+
+          RUN_1=$(wait_for_new_run build-all-1.yml "$PREVIOUS_1")
+          RUN_2=$(wait_for_new_run build-all-2.yml "$PREVIOUS_2")
+          RUN_3=$(wait_for_new_run build-all-3.yml "$PREVIOUS_3")
+
+          echo "Watching batch runs: $RUN_1, $RUN_2, $RUN_3"
+          gh run watch "$RUN_1" --repo "$REPO" --exit-status & PID_1=$!
+          gh run watch "$RUN_2" --repo "$REPO" --exit-status & PID_2=$!
+          gh run watch "$RUN_3" --repo "$REPO" --exit-status & PID_3=$!
+
+          STATUS=0
+          wait "$PID_1" || STATUS=1
+          wait "$PID_2" || STATUS=1
+          wait "$PID_3" || STATUS=1
+          exit "$STATUS"
