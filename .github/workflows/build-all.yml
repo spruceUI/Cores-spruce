@@ -133,4 +133,4 @@ jobs:
           (cd all-cores && zip -qr ../all-cores.zip cores/ cores64/ info/)
           echo "Packaged $DOWNLOADED newly built core archives:"
           unzip -l all-cores.zip
-          gh release upload "$TAG" all-cores.zip --clobber
+          gh release upload "$TAG" all-cores.zip --clobber --repo "$REPO"
