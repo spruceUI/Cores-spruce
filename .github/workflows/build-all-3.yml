@@ -20,8 +20,14 @@ jobs:
   core_armnes_arcade:
     uses: ./.github/workflows/build-armnes_arcade.yml
 
+  core_dsperate:
+    uses: ./.github/workflows/build-dsperate.yml
+
   core_fake08:
     uses: ./.github/workflows/build-fake08.yml
+
+  core_freej2me_plus:
+    uses: ./.github/workflows/build-freej2me_plus.yml
 
   core_gloopy:
     uses: ./.github/workflows/build-gloopy.yml
