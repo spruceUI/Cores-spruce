@@ -29,9 +29,6 @@ jobs:
   core_gametank:
     uses: ./.github/workflows/build-gametank.yml
 
-  core_libgametank:
-    uses: ./.github/workflows/build-libgametank.yml
-
   core_km_duckswanstation_xtreme_amped:
     uses: ./.github/workflows/build-km_duckswanstation_xtreme_amped.yml
 
