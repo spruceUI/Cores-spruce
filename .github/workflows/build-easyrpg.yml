@@ -56,8 +56,14 @@ jobs:
               if [ -n "$REF" ]; then
                 cd libretro-easyrpg && git fetch origin && git checkout "$REF" && cd ..
               fi
-              ./libretro-build.sh easyrpg
-              cp dist/unix/easyrpg_libretro.so /output/cores64/
+              cd libretro-easyrpg
+              cmake -S . -B build \
+                -DPLAYER_TARGET_PLATFORM=libretro \
+                -DPLAYER_BUILD_LIBLCF=ON \
+                -DBUILD_SHARED_LIBS=ON \
+                -DCMAKE_BUILD_TYPE=Release
+              cmake --build build --target easyrpg_libretro --parallel "$(nproc)"
+              cp build/easyrpg_libretro.so /output/cores64/
             '
       - name: Build armhf
         run: |
@@ -69,8 +75,14 @@ jobs:
               if [ -n "$REF" ]; then
                 cd libretro-easyrpg && git fetch origin && git checkout "$REF" && cd ..
               fi
-              ./libretro-build.sh easyrpg
-              cp dist/unix/easyrpg_libretro.so /output/cores/
+              cd libretro-easyrpg
+              cmake -S . -B build \
+                -DPLAYER_TARGET_PLATFORM=libretro \
+                -DPLAYER_BUILD_LIBLCF=ON \
+                -DBUILD_SHARED_LIBS=ON \
+                -DCMAKE_BUILD_TYPE=Release
+              cmake --build build --target easyrpg_libretro --parallel "$(nproc)"
+              cp build/easyrpg_libretro.so /output/cores/
             '
       - name: Grab info file
         run: |
