@@ -50,13 +50,18 @@ jobs:
         run: |
           mkdir -p output/cores64
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \
-            bash -c '
-              ./libretro-fetch.sh easyrpg
+          bash -c '
+            set -e
+            apt-get update
+            apt-get install -y --no-install-recommends libinih-dev pkg-config
+
+            ./libretro-fetch.sh easyrpg
               REF="${{ inputs.core_ref }}"
               if [ -n "$REF" ]; then
                 cd libretro-easyrpg && git fetch origin && git checkout "$REF" && cd ..
               fi
               cd libretro-easyrpg
+              git submodule update --init --recursive
               cmake -S . -B build \
                 -DPLAYER_TARGET_PLATFORM=libretro \
                 -DPLAYER_BUILD_LIBLCF=ON \
@@ -69,13 +74,18 @@ jobs:
         run: |
           mkdir -p output/cores
           docker run --rm -v ${{ github.workspace }}/output:/output cores-armhf \
-            bash -c '
-              ./libretro-fetch.sh easyrpg
+          bash -c '
+            set -e
+            apt-get update
+            apt-get install -y --no-install-recommends libinih-dev pkg-config
+
+            ./libretro-fetch.sh easyrpg
               REF="${{ inputs.core_ref }}"
               if [ -n "$REF" ]; then
                 cd libretro-easyrpg && git fetch origin && git checkout "$REF" && cd ..
               fi
               cd libretro-easyrpg
+              git submodule update --init --recursive
               cmake -S . -B build \
                 -DPLAYER_TARGET_PLATFORM=libretro \
                 -DPLAYER_BUILD_LIBLCF=ON \
