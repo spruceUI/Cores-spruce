@@ -110,9 +110,6 @@ jobs:
   core_swanstation:
     uses: ./.github/workflows/build-swanstation.yml
 
-  core_tgbdual:
-    uses: ./.github/workflows/build-tgbdual.yml
-
   core_theodore:
     uses: ./.github/workflows/build-theodore.yml
 
