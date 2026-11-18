@@ -51,47 +51,66 @@ jobs:
           mkdir -p output/cores64
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \
             bash -c '
+              set -euo pipefail
               ./libretro-fetch.sh mednafen_pcfx
               REF="${{ inputs.core_ref }}"
               if [ -n "$REF" ]; then
-                cd libretro-mednafen_pcfx && git fetch origin && git checkout "$REF" && cd ..
+                cd libretro-beetle_pcfx && git fetch origin && git checkout "$REF" && cd ..
               fi
-              ./libretro-build.sh mednafen_pcfx
-              cp dist/unix/mednafen_pcfx_libretro.so /output/cores64/
-            ' || echo "::warning::arm64 build failed for mednafen_pcfx"
+              make -C libretro-beetle_pcfx -j"$(nproc)" \
+                platform=unix \
+                CC=aarch64-linux-gnu-gcc \
+                CXX=aarch64-linux-gnu-g++
+              test -s libretro-beetle_pcfx/mednafen_pcfx_libretro.so
+              cp libretro-beetle_pcfx/mednafen_pcfx_libretro.so /output/cores64/
+            '
 
       - name: Build armhf
         run: |
           mkdir -p output/cores
           docker run --rm -v ${{ github.workspace }}/output:/output cores-armhf \
             bash -c '
+              set -euo pipefail
               ./libretro-fetch.sh mednafen_pcfx
               REF="${{ inputs.core_ref }}"
               if [ -n "$REF" ]; then
-                cd libretro-mednafen_pcfx && git fetch origin && git checkout "$REF" && cd ..
+                cd libretro-beetle_pcfx && git fetch origin && git checkout "$REF" && cd ..
               fi
-              ./libretro-build.sh mednafen_pcfx
-              cp dist/unix/mednafen_pcfx_libretro.so /output/cores/
-            ' || echo "::warning::armhf build failed for mednafen_pcfx"
+              make -C libretro-beetle_pcfx -j"$(nproc)" \
+                platform=armv7-neon-hardfloat \
+                CC=arm-a30-linux-gnueabihf-gcc \
+                CXX=arm-a30-linux-gnueabihf-g++ \
+                EXTRA_GCC_FLAGS="-mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard"
+              test -s libretro-beetle_pcfx/mednafen_pcfx_libretro.so
+              cp libretro-beetle_pcfx/mednafen_pcfx_libretro.so /output/cores/
+            '
 
       - name: Grab info file
         run: |
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \
-            bash -c 'cp dist/info/mednafen_pcfx_libretro.info /output/ 2>/dev/null || true'
+            cp dist/info/mednafen_pcfx_libretro.info /output/
+
+      - name: Verify builds
+        run: |
+          test -s output/cores64/mednafen_pcfx_libretro.so
+          test -s output/cores/mednafen_pcfx_libretro.so
+          file output/cores64/mednafen_pcfx_libretro.so | tee /dev/stderr | grep -q aarch64
+          file output/cores/mednafen_pcfx_libretro.so | tee /dev/stderr | grep -q 'ARM, EABI5'
+
+          NEWEST=$(objdump -T output/cores/mednafen_pcfx_libretro.so | grep -o 'GLIBC_[0-9.]*' | sort -Vu | tail -1)
+          echo "Newest armhf glibc symbol: ${NEWEST:-none}"
+          if [ -n "$NEWEST" ] && [ "$(printf '%s\n' "$NEWEST" GLIBC_2.23 | sort -V | tail -1)" != GLIBC_2.23 ]; then
+            echo "::error::armhf needs $NEWEST, A30 has glibc 2.23"
+            exit 1
+          fi
 
       - name: Package and upload
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           cd output
-          CONTENTS=""
-          [ -f cores64/mednafen_pcfx_libretro.so ] && CONTENTS="$CONTENTS cores64/"
-          [ -f cores/mednafen_pcfx_libretro.so ] && CONTENTS="$CONTENTS cores/"
-          [ -f mednafen_pcfx_libretro.info ] && CONTENTS="$CONTENTS mednafen_pcfx_libretro.info"
-          if [ -n "$CONTENTS" ]; then
-            zip -r mednafen_pcfx_libretro.zip $CONTENTS
-            gh release upload "beta-${{ github.ref_name }}" mednafen_pcfx_libretro.zip --clobber
-          else
-            echo "::error::No builds succeeded for mednafen_pcfx"
-            exit 1
-          fi
+          zip -r mednafen_pcfx_libretro.zip \
+            cores64/mednafen_pcfx_libretro.so \
+            cores/mednafen_pcfx_libretro.so \
+            mednafen_pcfx_libretro.info
+          gh release upload "beta-${{ github.ref_name }}" mednafen_pcfx_libretro.zip --clobber
