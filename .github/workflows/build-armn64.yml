@@ -59,7 +59,7 @@ jobs:
           docker run --rm -v ${{ github.workspace }}/armn64:/armn64 -v ${{ github.workspace }}/output:/output -w /armn64 cores-arm64 \
             bash -c '
               cmake -S . -B build-arm64 -DCMAKE_BUILD_TYPE=Release -DARMN64_TUNE=OFF \
-              && cmake --build build-arm64 -j$(nproc) \
+              && cmake --build build-arm64 --target armn64_libretro -j$(nproc) \
               && cp build-arm64/armn64_libretro.so /output/cores64/
             '
 
