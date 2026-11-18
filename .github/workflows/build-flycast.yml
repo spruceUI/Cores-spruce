@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       core_ref:
-        description: 'Core git ref (commit/tag/branch, blank for latest)'
-        default: ''
+        description: 'Core git ref (commit/tag/branch); default: the commit cores-experimental tested, blank for latest'
+        default: '392a429e8b040b3e5bf6696cb4f984274fc44123'
   workflow_call:
     inputs:
       core_ref:
         type: string
-        default: ''
+        default: '392a429e8b040b3e5bf6696cb4f984274fc44123'
 
 permissions:
   contents: write
@@ -51,26 +51,44 @@ jobs:
           mkdir -p output/cores64
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \
             bash -c '
+              set -e
               ./libretro-fetch.sh flycast
               REF="${{ inputs.core_ref }}"
               if [ -n "$REF" ]; then
-                cd libretro-flycast && git fetch origin && git checkout "$REF" && cd ..
+                git -C libretro-flycast fetch origin "$REF"
+                git -C libretro-flycast checkout --detach FETCH_HEAD
+                git -C libretro-flycast submodule update --init --recursive
               fi
-              ./libretro-build.sh flycast
-              cp dist/unix/flycast_libretro.so /output/cores64/
+              cmake -S libretro-flycast -B build-flycast -DCMAKE_BUILD_TYPE=Release -DLIBRETRO=ON \
+                -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE -DUSE_HOST_LIBZIP=OFF -DUSE_OPENMP=OFF \
+                -DUSE_VULKAN=OFF -DUSE_GLES=ON
+              cmake --build build-flycast --target flycast_libretro -j"$(nproc)"
+              cp build-flycast/flycast_libretro.so /output/cores64/
             '
       - name: Build armhf
         run: |
           mkdir -p output/cores
-          docker run --rm -v ${{ github.workspace }}/output:/output cores-armhf \
+          docker run --rm -v ${{ github.workspace }}/output:/output -v ${{ github.workspace }}/patches:/patches cores-armhf \
             bash -c '
+              set -e
               ./libretro-fetch.sh flycast
               REF="${{ inputs.core_ref }}"
               if [ -n "$REF" ]; then
-                cd libretro-flycast && git fetch origin && git checkout "$REF" && cd ..
+                git -C libretro-flycast fetch origin "$REF"
+                git -C libretro-flycast checkout --detach FETCH_HEAD
+                git -C libretro-flycast submodule update --init --recursive
               fi
-              ./libretro-build.sh flycast
-              cp dist/unix/flycast_libretro.so /output/cores/
+              # GCC 13 libstdc++ linked in and hidden: 32-bit RetroArch on some devices has an older one.
+              RUNTIME="-static-libstdc++ -static-libgcc -Wl,--exclude-libs,ALL"
+              # The A30 sysroot predates the HWCAP2 names that the lzma in libchdr uses.
+              git -C libretro-flycast/core/deps/libchdr apply -p4 --reverse --check /patches/flycast/lzma-hwcap2-guards.patch 2>/dev/null ||
+                git -C libretro-flycast/core/deps/libchdr apply -p4 /patches/flycast/lzma-hwcap2-guards.patch
+              cmake -S libretro-flycast -B build-flycast -DCMAKE_BUILD_TYPE=Release -DLIBRETRO=ON \
+                -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE -DUSE_HOST_LIBZIP=OFF -DUSE_OPENMP=OFF \
+                -DUSE_VULKAN=OFF -DUSE_GLES2=ON \
+                -DCMAKE_SHARED_LINKER_FLAGS="$RUNTIME" -DCMAKE_MODULE_LINKER_FLAGS="$RUNTIME"
+              cmake --build build-flycast --target flycast_libretro -j"$(nproc)"
+              cp build-flycast/flycast_libretro.so /output/cores/
             '
       - name: Grab info file
         run: |

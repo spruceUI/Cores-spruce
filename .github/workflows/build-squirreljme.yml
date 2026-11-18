@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       core_ref:
-        description: 'Core git ref (commit/tag/branch, blank for latest)'
-        default: ''
+        description: 'Core git ref (commit/tag/branch); default: the commit cores-experimental tested, blank for latest'
+        default: 'c8de2e47c2994f1c36215dd29d44fecf086f25ca'
   workflow_call:
     inputs:
       core_ref:
         type: string
-        default: ''
+        default: 'c8de2e47c2994f1c36215dd29d44fecf086f25ca'
 
 permissions:
   contents: write
@@ -46,31 +46,27 @@ jobs:
           gunzip -c cores-arm64.tar.gz | docker load
           gunzip -c cores-armhf.tar.gz | docker load
 
-      - name: Build arm64
-        run: |
-          mkdir -p output/cores64
-          docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \
-            bash -c '
-              ./libretro-fetch.sh squirreljme
-              REF="${{ inputs.core_ref }}"
-              if [ -n "$REF" ]; then
-                cd libretro-squirreljme && git fetch origin && git checkout "$REF" && cd ..
-              fi
-              ./libretro-build.sh squirreljme
-              cp dist/unix/squirreljme_libretro.so /output/cores64/
-            '
       - name: Build armhf
         run: |
           mkdir -p output/cores
-          docker run --rm -v ${{ github.workspace }}/output:/output cores-armhf \
+          docker run --rm -v ${{ github.workspace }}/output:/output -v ${{ github.workspace }}/patches:/patches cores-armhf \
             bash -c '
+              set -e
               ./libretro-fetch.sh squirreljme
               REF="${{ inputs.core_ref }}"
               if [ -n "$REF" ]; then
-                cd libretro-squirreljme && git fetch origin && git checkout "$REF" && cd ..
+                git -C libretro-squirreljme fetch origin "$REF"
+                git -C libretro-squirreljme checkout --detach FETCH_HEAD
+                git -C libretro-squirreljme submodule update --init --recursive
               fi
-              ./libretro-build.sh squirreljme
-              cp dist/unix/squirreljme_libretro.so /output/cores/
+              for p in system-map-arm32-or decode-host-cc sourceize-host-cc; do
+                git -C libretro-squirreljme apply --reverse --check /patches/squirreljme/$p.patch 2>/dev/null ||
+                  git -C libretro-squirreljme apply /patches/squirreljme/$p.patch
+              done
+              cmake -S libretro-squirreljme/nanocoat -B build-squirreljme -DCMAKE_BUILD_TYPE=Release \
+                -DSQUIRRELJME_ENABLE_FRONTEND_LIBRETRO=ON
+              cmake --build build-squirreljme --target squirreljme_libretro -j"$(nproc)"
+              cp build-squirreljme/bin/squirreljme_libretro.so /output/cores/
             '
       - name: Grab info file
         run: |

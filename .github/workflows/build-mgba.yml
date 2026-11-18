@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       core_ref:
-        description: 'Core git ref (commit/tag/branch, blank for latest)'
-        default: ''
+        description: 'Core git ref (commit/tag/branch); default: the commit cores-experimental tested, blank for latest'
+        default: '6dce57eef127dc4cc292644f38196e0e7c58590c'
   workflow_call:
     inputs:
       core_ref:
         type: string
-        default: ''
+        default: '6dce57eef127dc4cc292644f38196e0e7c58590c'
 
 permissions:
   contents: write
@@ -51,10 +51,13 @@ jobs:
           mkdir -p output/cores64
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \
             bash -c '
+              set -e
               ./libretro-fetch.sh mgba
               REF="${{ inputs.core_ref }}"
               if [ -n "$REF" ]; then
-                cd libretro-mgba && git fetch origin && git checkout "$REF" && cd ..
+                git -C libretro-mgba fetch origin "$REF"
+                git -C libretro-mgba checkout --detach FETCH_HEAD
+                git -C libretro-mgba submodule update --init --recursive
               fi
               ./libretro-build.sh mgba
               cp dist/unix/mgba_libretro.so /output/cores64/
@@ -64,10 +67,13 @@ jobs:
           mkdir -p output/cores
           docker run --rm -v ${{ github.workspace }}/output:/output cores-armhf \
             bash -c '
+              set -e
               ./libretro-fetch.sh mgba
               REF="${{ inputs.core_ref }}"
               if [ -n "$REF" ]; then
-                cd libretro-mgba && git fetch origin && git checkout "$REF" && cd ..
+                git -C libretro-mgba fetch origin "$REF"
+                git -C libretro-mgba checkout --detach FETCH_HEAD
+                git -C libretro-mgba submodule update --init --recursive
               fi
               ./libretro-build.sh mgba
               cp dist/unix/mgba_libretro.so /output/cores/

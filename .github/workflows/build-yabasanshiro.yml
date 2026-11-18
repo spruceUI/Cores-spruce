@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       core_ref:
-        description: 'Core git ref (commit/tag/branch, blank for latest)'
-        default: ''
+        description: 'Core git ref (commit/tag/branch); default: the commit cores-experimental tested, blank for latest'
+        default: 'f448097b69a6037246a08e9dc09eabaa420d7893'
   workflow_call:
     inputs:
       core_ref:
         type: string
-        default: ''
+        default: 'f448097b69a6037246a08e9dc09eabaa420d7893'
 
 permissions:
   contents: write
@@ -51,10 +51,13 @@ jobs:
           mkdir -p output/cores64
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \
             bash -c '
+              set -e
               ./libretro-fetch.sh yabasanshiro
               REF="${{ inputs.core_ref }}"
               if [ -n "$REF" ]; then
-                cd libretro-yabasanshiro && git fetch origin && git checkout "$REF" && cd ..
+                git -C libretro-yabasanshiro fetch origin "$REF"
+                git -C libretro-yabasanshiro checkout --detach FETCH_HEAD
+                git -C libretro-yabasanshiro submodule update --init --recursive
               fi
 
               # YabaSanshiro incorrectly adds the x86-only SSE flag
@@ -64,25 +67,6 @@ jobs:
 
               ./libretro-build.sh yabasanshiro
               cp dist/unix/yabasanshiro_libretro.so /output/cores64/
-            '
-      - name: Build armhf
-        run: |
-          mkdir -p output/cores
-          docker run --rm -v ${{ github.workspace }}/output:/output cores-armhf \
-            bash -c '
-              ./libretro-fetch.sh yabasanshiro
-              REF="${{ inputs.core_ref }}"
-              if [ -n "$REF" ]; then
-                cd libretro-yabasanshiro && git fetch origin && git checkout "$REF" && cd ..
-              fi
-
-              # YabaSanshiro incorrectly adds the x86-only SSE flag
-              # when cross-compiling for ARM.
-              grep -RIl --exclude-dir=.git -- "-mfpmath=sse" libretro-yabasanshiro |
-                xargs -r sed -i "s/-mfpmath=sse//g"
-
-              ./libretro-build.sh yabasanshiro
-              cp dist/unix/yabasanshiro_libretro.so /output/cores/
             '
       - name: Grab info file
         run: |

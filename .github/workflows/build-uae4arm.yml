@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       core_ref:
-        description: 'Core git ref (commit/tag/branch, blank for latest)'
-        default: ''
+        description: 'Core git ref (commit/tag/branch); default: the commit cores-experimental tested, blank for latest'
+        default: 'dafd48fad7510ebc2f90ebdee8331bbdcf65fd49'
   workflow_call:
     inputs:
       core_ref:
         type: string
-        default: ''
+        default: 'dafd48fad7510ebc2f90ebdee8331bbdcf65fd49'
 
 permissions:
   contents: write
@@ -46,31 +46,25 @@ jobs:
           gunzip -c cores-arm64.tar.gz | docker load
           gunzip -c cores-armhf.tar.gz | docker load
 
-      - name: Build arm64
-        run: |
-          mkdir -p output/cores64
-          docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \
-            bash -c '
-              ./libretro-fetch.sh uae4arm
-              REF="${{ inputs.core_ref }}"
-              if [ -n "$REF" ]; then
-                cd libretro-uae4arm && git fetch origin && git checkout "$REF" && cd ..
-              fi
-              ./libretro-build.sh uae4arm
-              cp dist/unix/uae4arm_libretro.so /output/cores64/
-            '
       - name: Build armhf
         run: |
           mkdir -p output/cores
           docker run --rm -v ${{ github.workspace }}/output:/output cores-armhf \
             bash -c '
+              set -e
               ./libretro-fetch.sh uae4arm
               REF="${{ inputs.core_ref }}"
               if [ -n "$REF" ]; then
-                cd libretro-uae4arm && git fetch origin && git checkout "$REF" && cd ..
+                git -C libretro-uae4arm fetch origin "$REF"
+                git -C libretro-uae4arm checkout --detach FETCH_HEAD
+                git -C libretro-uae4arm submodule update --init --recursive
               fi
-              ./libretro-build.sh uae4arm
-              cp dist/unix/uae4arm_libretro.so /output/cores/
+              # The pinned commit predates Makefile.libretro, which libretro-super now expects.
+              mk=Makefile.libretro; [ -f libretro-uae4arm/$mk ] || mk=Makefile
+              # GCC 13 libstdc++ linked in and hidden: 32-bit RetroArch on some devices has an older one.
+              make -C libretro-uae4arm -f $mk platform=unix -j"$(nproc)" CC="$HOST_CC-gcc" CXX="$HOST_CC-g++" \
+                LDFLAGS="-lpthread -static-libstdc++ -static-libgcc -Wl,--exclude-libs,ALL"
+              cp libretro-uae4arm/uae4arm_libretro.so /output/cores/
             '
       - name: Grab info file
         run: |
