@@ -1,0 +1,22 @@
+{
+  "yabasanshiro-libretro": {
+    "image": "cores-standalone-yabasanshiro-pgo:v2",
+    "archive": "cores-standalone-yabasanshiro-pgo-v2.tar.gz",
+    "archive_sha256": "cd7d63d36ec88ff269c9d7ae8a6d306eb709f95e216898f5d123c5a34c65cb11",
+    "spruce": {
+      "yabasanshiro_generic_libretro.so": "RetroArch/.retroarch/cores64/yabasanshiro_generic_libretro.so"
+    },
+    "shipped": {
+      "yabasanshiro_generic_libretro.so": "454f2e5977d8b70aaba9e6b8cd67541edc65c81474d1908dfb92008e289af601"
+    },
+    "device_libs": [
+      "libGLESv2.so.2",
+      "libc.so.6",
+      "libgcc_s.so.1",
+      "libm.so.6",
+      "libpthread.so.0",
+      "libstdc++.so.6"
+    ],
+    "forbidden_libs": []
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "gametank-arm64": {
+    "image": "cores-standalone-dsperate:v1",
+    "archive": "cores-standalone-dsperate-v1.tar.gz",
+    "archive_sha256": "e480aa35a427587cac3e8dc51ba950615ab3d8c3d613ec2e8451d53391866d25",
+    "spruce": {
+      "GameTankEmulator": "Emu/GAMETANK/gametank/GameTankEmulator"
+    },
+    "shipped": {
+      "GameTankEmulator": "3cf9cce0d1880597f8eded43acda121921d4539befd1b99e05774a085686cf61"
+    },
+    "device_libs": [
+      "ld-linux-aarch64.so.1",
+      "libSDL2-2.0.so.0",
+      "libc.so.6",
+      "libm.so.6",
+      "libpthread.so.0"
+    ],
+    "forbidden_libs": [
+      "libgcc_s.so.1",
+      "libstdc++.so.6"
+    ]
+  },
+  "gametank-a30": {
+    "image": "cores-standalone-armhf:v1",
+    "archive": "cores-standalone-armhf-v1.tar.gz",
+    "archive_sha256": "22ae3091ab280955bef98020e71a9c94bfc1890e4a8730c42ebcefdaaa5244a1",
+    "spruce": {
+      "GameTankEmulator": "Emu/GAMETANK/gametank-a30/GameTankEmulator"
+    },
+    "shipped": {
+      "GameTankEmulator": "c895fe8a2a789013714733a8dd8de89e7f78a78db810acbe106b3d6bd12c5f17"
+    },
+    "device_libs": [
+      "ld-linux-armhf.so.3",
+      "libSDL2-2.0.so.0",
+      "libc.so.6",
+      "libm.so.6",
+      "libpthread.so.0"
+    ],
+    "forbidden_libs": [
+      "libgcc_s.so.1",
+      "libstdc++.so.6"
+    ]
+  }
+}

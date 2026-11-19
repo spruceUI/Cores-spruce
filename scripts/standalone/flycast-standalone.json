@@ -1,0 +1,44 @@
+{
+  "flycast-standalone-t3-lto": {
+    "image": "cores-arm64-standalone:v2",
+    "archive": "cores-arm64-standalone-v2.tar.gz",
+    "archive_sha256": "f7b1b4757a8ba34104fd4baf51f1eff2a25d671afda946dd32edfc924cce3b74",
+    "spruce": {
+      "flycast": "Emu/DC/flycast",
+      "lib64/": "Emu/DC/lib64/"
+    },
+    "shipped": {
+      "flycast": "3fc30ddfe89f6655c356c32eecb081c34be15f2e63932126acd283c9283ec0d4",
+      "lib64/libcurl.so.4": "07a17f0f376dc5767ec9a08088f74eea7020101c2863cf695584e3174b6a284f",
+      "lib64/libssl.so.1.1": "29df77584de812438fd363ede4f07f767effeb8cc29e74b68f52286bd5bf66ad"
+    },
+    "device_libs": [
+      "libasound.so.2",
+      "libSDL2-2.0.so.0",
+      "libz.so.1",
+      "librt.so.1",
+      "libdl.so.2",
+      "libpthread.so.0",
+      "libudev.so.1",
+      "libstdc++.so.6",
+      "libm.so.6",
+      "libgcc_s.so.1",
+      "libc.so.6",
+      "ld-linux-aarch64.so.1"
+    ],
+    "forbidden_libs": [
+      "libgomp.so.1",
+      "libpulse.so.0",
+      "libzip.so.5",
+      "libpng16.so.16",
+      "libharfbuzz.so.0",
+      "libbrotlidec.so.1",
+      "libbz2.so.1.0",
+      "libvulkan.so.1",
+      "libGLESv2.so.2",
+      "libGLESv2.so",
+      "libEGL.so.1",
+      "libEGL.so"
+    ]
+  }
+}

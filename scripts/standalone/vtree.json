@@ -1,0 +1,62 @@
+{
+  "vtree-arm64": {
+    "image": "cores-standalone-vtree:v1",
+    "archive": "cores-standalone-vtree-v1.tar.gz",
+    "archive_sha256": "0598fea7b510ca01f8e1b9aa6bb734d11be09dbdc509b554cdb08024776f15ae",
+    "spruce": {
+      "vtree.aarch64": "App/FileManagement/vtree.aarch64"
+    },
+    "shipped": {
+      "vtree.aarch64": "8c0b471ac30a7d42fd0706f08e3d6d44d9c61bec3692ce6f5f86ed30c9d7fc0f"
+    },
+    "device_libs": [
+      "ld-linux-aarch64.so.1",
+      "libSDL2-2.0.so.0",
+      "libSDL2_image-2.0.so.0",
+      "libSDL2_ttf-2.0.so.0",
+      "libc.so.6",
+      "libm.so.6"
+    ],
+    "forbidden_libs": []
+  },
+  "vtree-a30": {
+    "image": "cores-standalone-armhf:v1",
+    "archive": "cores-standalone-armhf-v1.tar.gz",
+    "archive_sha256": "22ae3091ab280955bef98020e71a9c94bfc1890e4a8730c42ebcefdaaa5244a1",
+    "spruce": {
+      "vtree.a30": "App/FileManagement/vtree.a30",
+      "lib-A30/": "App/FileManagement/lib-A30/"
+    },
+    "shipped": {
+      "vtree.a30": "1ab5d464139a861f985a55ef26125b3e85859a4cbda04bb6f05882058234b0a7",
+      "lib-A30/libSDL2_ttf-2.0.so.0": "9b34fce9cd2d1ef65fe05eeb714204a5d94c973d1c32bd87a507d80f496eb170",
+      "lib-A30/libSDL2_image-2.0.so.0": "5b9eab85b126497cbb5acaf61c4b2ce737cffdba5dc758042b160898d4d0167a"
+    },
+    "device_libs": [
+      "libSDL2-2.0.so.0",
+      "libc.so.6",
+      "libfreetype.so.6",
+      "libm.so.6"
+    ],
+    "forbidden_libs": []
+  },
+  "vtree-mini": {
+    "image": "cores-standalone-miyoomini:v1",
+    "archive": "cores-standalone-miyoomini-v1.tar.gz",
+    "archive_sha256": "fc149d61003f30c758f288a32f32efab95350322aac3f143a3e7a397bde75b2c",
+    "spruce": {
+      "vtree.mini": "App/FileManagement/vtree.mini"
+    },
+    "shipped": {
+      "vtree.mini": "ba485885b53e033db2540f37e039687c0023c531aab136d7003d1a8c049f213f"
+    },
+    "device_libs": [
+      "libSDL2-2.0.so.0",
+      "libSDL2_image-2.0.so.0",
+      "libSDL2_ttf-2.0.so.0",
+      "libc.so.6",
+      "libm.so.6"
+    ],
+    "forbidden_libs": []
+  }
+}

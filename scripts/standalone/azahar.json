@@ -1,0 +1,26 @@
+{
+  "azahar-libretro": {
+    "image": "cores-standalone-azahar:v1",
+    "archive": "cores-standalone-azahar-v1.tar.gz",
+    "archive_sha256": "ae92137734bb6a404a2996903133eaa8a83885fb2eda2d5c53bdb62e62e62ba7",
+    "spruce": {
+      "azahar_libretro.so": "RetroArch/.retroarch/cores64/azahar_libretro.so"
+    },
+    "shipped": {
+      "azahar_libretro.so": "12c603223762d2d9a82248102559581a24f7f07ff0b49f54ff53cd0172c21634"
+    },
+    "device_libs": [
+      "ld-linux-aarch64.so.1",
+      "libc.so.6",
+      "libgcc_s.so.1",
+      "libm.so.6",
+      "libstdc++.so.6"
+    ],
+    "forbidden_libs": [
+      "libEGL.so.1",
+      "libGL.so.1",
+      "libGLESv2.so.2",
+      "libvulkan.so.1"
+    ]
+  }
+}

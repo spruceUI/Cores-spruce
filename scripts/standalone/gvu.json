@@ -1,0 +1,42 @@
+{
+  "gvu-arm64": {
+    "image": "cores-standalone-gvu-arm64:v2",
+    "archive": "cores-standalone-gvu-arm64-v2.tar.gz",
+    "archive_sha256": "b705634f9b1169c57deecb9bbc0c9b07baa4df4941d9d91d0896788a5fa4c556",
+    "spruce": {
+      "gvu64": "Emu/MEDIA/bin64/gvu"
+    },
+    "shipped": {
+      "gvu64": "b3a05d23d5a7394af0a6be8edff7cd0c9d189a26d2d6a48f4e69c7d4b3ad9fe9"
+    },
+    "device_libs": [
+      "ld-linux-aarch64.so.1",
+      "libc.so.6",
+      "libdl.so.2",
+      "libm.so.6",
+      "libpthread.so.0",
+      "libz.so.1"
+    ],
+    "forbidden_libs": []
+  },
+  "gvu-a30": {
+    "image": "cores-standalone-gvu-a30:v2",
+    "archive": "cores-standalone-gvu-a30-v2.tar.gz",
+    "archive_sha256": "18a547876cbdc0b70106539d1338bbe5c0b9f90eca2281b3af3efc79b417884b",
+    "spruce": {
+      "gvu32": "Emu/MEDIA/bin32/gvu"
+    },
+    "shipped": {
+      "gvu32": "10b1ebdcbcfeea5e43417f2f88639526cfe0f87f4c12e3c02d0f08dedb8e445b"
+    },
+    "device_libs": [
+      "ld-linux-armhf.so.3",
+      "libSDL2-2.0.so.0",
+      "libc.so.6",
+      "libm.so.6",
+      "libpthread.so.0",
+      "libz.so.1"
+    ],
+    "forbidden_libs": []
+  }
+}

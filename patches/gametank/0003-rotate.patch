@@ -1,0 +1,79 @@
+Generated from spruceUI/GameTank-spruce@2734536b:patches/common/rotate.py against
+clydeshaffer/GameTankEmulator 9896544460d5 (2026-09-28), with patches 1-2 applied. Apply in order (3 of 3).
+
+diff --git a/src/gte.cpp b/src/gte.cpp
+index 32786f5..a45efbe 100644
+--- a/src/gte.cpp
++++ b/src/gte.cpp
+@@ -968,6 +968,41 @@ bool checkHotkey(SDL_Keycode  key) {
+ #define EM_BOOL int
+ #endif
+ 
++static int gteRotate = -1;
++static SDL_Texture *gteRotateTarget = NULL;
++
++static void gteRotateBegin(int *w, int *h) {
++	if(gteRotate < 0) {
++		const char *env = getenv("GTE_ROTATE");
++		gteRotate = env ? atoi(env) % 360 : 0;
++	}
++	if(!gteRotate) {
++		SDL_GetWindowSize(mainWindow, w, h);
++		return;
++	}
++	SDL_GetRendererOutputSize(mainRenderer, w, h);
++	if(gteRotate == 90 || gteRotate == 270) {
++		int t = *w;
++		*w = *h;
++		*h = t;
++	}
++	if(!gteRotateTarget) {
++		gteRotateTarget = SDL_CreateTexture(mainRenderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_TARGET, *w, *h);
++	}
++	SDL_SetRenderTarget(mainRenderer, gteRotateTarget);
++}
++
++static void gteRotateEnd() {
++	if(!gteRotateTarget) return;
++	int w, h, tw, th;
++	SDL_SetRenderTarget(mainRenderer, NULL);
++	SDL_GetRendererOutputSize(mainRenderer, &w, &h);
++	SDL_QueryTexture(gteRotateTarget, NULL, NULL, &tw, &th);
++	SDL_Rect dst = { (w - tw) / 2, (h - th) / 2, tw, th };
++	SDL_RenderClear(mainRenderer);
++	SDL_RenderCopyEx(mainRenderer, gteRotateTarget, NULL, &dst, gteRotate, NULL, SDL_FLIP_NONE);
++}
++
+ void refreshScreen() {
+ 	SDL_Rect src, dest, viewport_dest;
+ 	int scr_w, scr_h;
+@@ -975,7 +1010,7 @@ void refreshScreen() {
+ 	src.y = (system_state.dma_control & DMA_VID_OUT_PAGE_BIT) ? GT_HEIGHT : 0;
+ 	src.w = GT_WIDTH;
+ 	src.h = GT_HEIGHT;
+-	SDL_GetWindowSize(mainWindow, &scr_w, &scr_h);
++	gteRotateBegin(&scr_w, &scr_h);
+ 	int scale_h = scr_h / GT_HEIGHT;
+ 	int scale_w = (scr_w * VIEWPORT_ASPECT_H) / (GT_HEIGHT * VIEWPORT_ASPECT_W);
+ 	int scale = min(scale_h, scale_w);
+@@ -1030,6 +1065,12 @@ void refreshScreen() {
+ 	ImGui::SetCurrentContext(main_imgui_ctx);
+     ImGui_ImplSDLRenderer2_NewFrame();
+     ImGui_ImplSDL2_NewFrame();
++	if(gteRotateTarget) {
++		int tw, th;
++		SDL_QueryTexture(gteRotateTarget, NULL, NULL, &tw, &th);
++		ImGui::GetIO().DisplaySize = ImVec2((float) tw, (float) th);
++		ImGui::GetIO().DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
++	}
+ 	ImGui::NewFrame();
+ 	if(showMenu) {
+ #ifndef WRAPPER_MODE
+@@ -1172,6 +1213,7 @@ void refreshScreen() {
+ 	ImGui::Render();
+ 	ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), mainRenderer);
+ #endif
++	gteRotateEnd();
+ 	SDL_RenderPresent(mainRenderer);
+ }
+ 

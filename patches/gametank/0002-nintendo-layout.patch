@@ -1,0 +1,46 @@
+Generated from spruceUI/GameTank-spruce@2734536b:patches/common/nintendo_layout.py against
+clydeshaffer/GameTankEmulator 9896544460d5 (2026-09-28), with patch 1 applied. Apply in order (2 of 3).
+
+diff --git a/src/gte.cpp b/src/gte.cpp
+index be67d35..32786f5 100644
+--- a/src/gte.cpp
++++ b/src/gte.cpp
+@@ -1615,6 +1615,7 @@ int main(int argC, char* argV[]) {
+ 	io.IniFilename = NULL;
+ 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+ 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
++	io.ConfigNavSwapGamepadButtons = true;
+ 	io.Fonts->Flags |= ImFontAtlasFlags_NoBakedLines;
+ 	ImGui::StyleColorsDark();
+ 	ImGui_ImplSDL2_InitForSDLRenderer(mainWindow, mainRenderer);
+diff --git a/src/joystick_config.cpp b/src/joystick_config.cpp
+index 9c5da62..afb2dec 100644
+--- a/src/joystick_config.cpp
++++ b/src/joystick_config.cpp
+@@ -231,12 +231,12 @@ void load_joystick_defaults(std::vector<InputBinding> &bindings) {
+ 	bindings.emplace_back(b);
+ 
+ 	b.type = BindingTypes::JOYSTICK_BUTTON;
+-	b.host_input.joy_button = SDL_CONTROLLER_BUTTON_A;
++	b.host_input.joy_button = SDL_CONTROLLER_BUTTON_B;
+ 	b.button = GameTankButtons::P1_A;
+ 	bindings.emplace_back(b);
+ 
+ 	b.type = BindingTypes::JOYSTICK_BUTTON;
+-	b.host_input.joy_button = SDL_CONTROLLER_BUTTON_B;
++	b.host_input.joy_button = SDL_CONTROLLER_BUTTON_A;
+ 	b.button = GameTankButtons::P1_B;
+ 	bindings.emplace_back(b);
+ 
+@@ -245,11 +245,6 @@ void load_joystick_defaults(std::vector<InputBinding> &bindings) {
+ 	b.button = GameTankButtons::P1_C;
+ 	bindings.emplace_back(b);
+ 
+-	b.type = BindingTypes::JOYSTICK_BUTTON;
+-	b.host_input.joy_button = SDL_CONTROLLER_BUTTON_Y;
+-	b.button = GameTankButtons::P1_C;
+-	bindings.emplace_back(b);
+-
+ 	b.type = BindingTypes::JOYSTICK_BUTTON;
+ 	b.host_input.joy_button = SDL_CONTROLLER_BUTTON_START;
+ 	b.button = GameTankButtons::P1_START;
