@@ -45,6 +45,7 @@ The scripts in `scripts/standalone/` were rendered from cores-experimental 9f6b4
 |---|---|---|---|
 | Build azahar (`azahar_libretro.zip`) | `azahar-libretro` | `RetroArch/.retroarch/cores64/azahar_libretro.so` | 3DS default on MIYOO_FLIP, OAKMOSS_A133P, and DARKMOSS's RGB30, RGB20SX, RG353M, E5 Plus and Miniloong |
 | Build yabasanshiro_generic (`yabasanshiro_generic_libretro.zip`) | `yabasanshiro-libretro` | `RetroArch/.retroarch/cores64/yabasanshiro_generic_libretro.so` | Saturn default on DARKMOSS, MIYOO_FLIP, ANBERNIC_RGXX, TRIMUI_SMART_PRO_S, TRIMUI_A133P and OAKMOSS_A133P (GKD_PIXEL2 has its own core) |
+| Build flycast (`flycast_libretro.zip`, its arm64 half) | `flycast-libretro-t3` | `RetroArch/.retroarch/cores64/flycast_libretro.so` | Dreamcast, NAOMI and Atomiswave default on MIYOO_FLIP, TRIMUI_A133P, TRIMUI_SMART_PRO_S, ANBERNIC_RGXX and OAKMOSS_A133P |
 | Build Flycast standalone (`flycast-standalone.zip`) | `flycast-standalone-t3-lto` | `Emu/DC/flycast`, `Emu/DC/lib64/` | Dreamcast default on DARKMOSS; an option for Dreamcast, NAOMI and Atomiswave on the other 64-bit devices (all three run Emu/DC's copy) |
 | Build BigPEmu (`bigpemu.zip`) | `bigpemu` | `Emu/JAGUAR/bigpemu/` | Jaguar default on MIYOO_FLIP, TRIMUI_A133P, TRIMUI_SMART_PRO_S, GKD_PIXEL2, ANBERNIC_RGXX, DARKMOSS and OAKMOSS_A133P |
 | Build GameTank standalone (`gametank-standalone.zip`) | `gametank-arm64` | `Emu/GAMETANK/gametank/GameTankEmulator` | a GameTank option on the 64-bit devices (the gametank core is the default) |
