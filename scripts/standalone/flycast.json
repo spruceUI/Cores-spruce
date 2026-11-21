@@ -1,0 +1,30 @@
+{
+  "flycast-libretro-t3": {
+    "image": "cores-standalone-yabasanshiro-pgo:v2",
+    "archive": "cores-standalone-yabasanshiro-pgo-v2.tar.gz",
+    "archive_sha256": "cd7d63d36ec88ff269c9d7ae8a6d306eb709f95e216898f5d123c5a34c65cb11",
+    "spruce": {
+      "flycast_libretro.so": "RetroArch/.retroarch/cores64/flycast_libretro.so"
+    },
+    "shipped": {
+      "flycast_libretro.so": "eff7ae729265114ee34b0063ae0c4a3408133688bb9eea3de7fc7a0a7013aa23"
+    },
+    "device_libs": [
+      "libc.so.6",
+      "libdl.so.2",
+      "libgcc_s.so.1",
+      "libm.so.6",
+      "libpthread.so.0",
+      "librt.so.1",
+      "libstdc++.so.6"
+    ],
+    "forbidden_libs": [
+      "libvulkan.so.1",
+      "libGLESv2.so.2",
+      "libGLESv2.so",
+      "libEGL.so.1",
+      "libEGL.so",
+      "libGL.so.1"
+    ]
+  }
+}

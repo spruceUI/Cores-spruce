@@ -1,0 +1,91 @@
+name: Build Mupen64Plus standalone
+
+# Mupen64Plus standalone for Emu/N64: the 64-bit folder from three builds, and the A30's. Each build runs its cores-experimental recipe
+# (scripts/standalone/) in that repo's image from its toolchains release.
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        recipe: [mupen64plus-arm64-20260404, mupen64plus-arm64, mupen64plus-arm64-gliden64-ovl, mupen64plus-a30]
+    env:
+      RECIPE: ${{ matrix.recipe }}
+      MANIFEST: scripts/standalone/mupen64plus-standalone.json
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download, check and load the image
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          found="$(python3 -c 'import json, sys; r = json.load(open(sys.argv[1]))[sys.argv[2]]; print(r["archive"], r["archive_sha256"])' "$MANIFEST" "$RECIPE")"
+          read -r archive sha <<< "$found"
+          gh release download toolchains -R spruceUI/cores-experimental --pattern "$archive" --dir "$RUNNER_TEMP"
+          echo "$sha  $RUNNER_TEMP/$archive" | sha256sum -c -
+          # docker load prints the image's tag, or only its ID on a containerd image store.
+          image="$(gunzip -c "$RUNNER_TEMP/$archive" | docker load | sed -n 's/^Loaded image\( ID\)\{0,1\}: //p' | tail -1)"
+          test -n "$image"
+          rm "$RUNNER_TEMP/$archive"
+          echo "IMAGE=$image" >> "$GITHUB_ENV"
+          df -h / | tail -1
+
+      - name: Build
+        run: |
+          mkdir -p output
+          docker run --rm -e OUTPUT_UID="$(id -u)" -e OUTPUT_GID="$(id -g)" \
+            -v "$GITHUB_WORKSPACE:/work:ro" -v "$GITHUB_WORKSPACE/output:/output" "$IMAGE" \
+            bash -l "/work/scripts/standalone/$RECIPE.sh"
+
+      - name: Check and lay out the card files
+        run: python3 scripts/standalone/check.py "$MANIFEST" "$RECIPE" output card
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: card-${{ matrix.recipe }}
+          path: card/
+          if-no-files-found: error
+          # Cores go under RetroArch/.retroarch/, which upload-artifact skips by default.
+          include-hidden-files: true
+
+  package:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure beta release exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="beta-${{ github.ref_name }}"
+          gh release view "$TAG" -R "${{ github.repository }}" >/dev/null 2>&1 || \
+            gh release create "$TAG" -R "${{ github.repository }}" \
+              --target "${{ github.ref_name }}" \
+              --title "Beta Build (${{ github.ref_name }})" \
+              --prerelease \
+              --notes "Core builds from ${{ github.ref_name }}" \
+            || true
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: card-*
+          path: card
+          merge-multiple: true
+
+      - name: Package and upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          (cd card && zip -qr ../mupen64plus-standalone.zip .)
+          unzip -l mupen64plus-standalone.zip | tail -1
+          gh release upload "beta-${{ github.ref_name }}" mupen64plus-standalone.zip --clobber -R "${{ github.repository }}"

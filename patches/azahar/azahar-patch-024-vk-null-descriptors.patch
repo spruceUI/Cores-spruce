@@ -1,0 +1,146 @@
+Re-cut by cores-experimental from christianhaitian/rk3566_core_builds@e76af81 patches/azahar-patch-024-vk-null-descriptors.patch: the same change,
+regenerated so that git apply takes it (GNU patch applies the original with fuzz after patch 000).
+
+diff --git a/src/video_core/renderer_vulkan/vk_instance.cpp b/src/video_core/renderer_vulkan/vk_instance.cpp
+index 65059d6..f810e86 100644
+--- a/src/video_core/renderer_vulkan/vk_instance.cpp
++++ b/src/video_core/renderer_vulkan/vk_instance.cpp
+@@ -402,6 +402,7 @@ bool Instance::CreateDevice() {
+         vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT,
+         vk::PhysicalDeviceTimelineSemaphoreFeaturesKHR,
+         vk::PhysicalDeviceCustomBorderColorFeaturesEXT, vk::PhysicalDeviceIndexTypeUint8FeaturesEXT,
++        vk::PhysicalDeviceRobustness2FeaturesEXT,
+         vk::PhysicalDeviceFragmentShaderInterlockFeaturesEXT,
+         vk::PhysicalDevicePipelineCreationCacheControlFeaturesEXT,
+         vk::PhysicalDeviceFragmentShaderBarycentricFeaturesKHR,
+@@ -509,6 +510,7 @@ bool Instance::CreateDevice() {
+     const bool has_index_type_uint8 =
+         add_extension(VK_EXT_INDEX_TYPE_UINT8_EXTENSION_NAME, is_moltenvk,
+                       "uint8 index conversion causes memory leaks in MoltenVK");
++    const bool has_robustness2 = add_extension(VK_EXT_ROBUSTNESS_2_EXTENSION_NAME);
+     const bool has_fragment_shader_interlock =
+         add_extension(VK_EXT_FRAGMENT_SHADER_INTERLOCK_EXTENSION_NAME, is_nvidia,
+                       "it is broken on Nvidia drivers");
+@@ -580,6 +582,7 @@ bool Instance::CreateDevice() {
+         vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT{},
+         vk::PhysicalDeviceCustomBorderColorFeaturesEXT{},
+         vk::PhysicalDeviceIndexTypeUint8FeaturesEXT{},
++        vk::PhysicalDeviceRobustness2FeaturesEXT{},
+         vk::PhysicalDeviceFragmentShaderInterlockFeaturesEXT{},
+         vk::PhysicalDevicePipelineCreationCacheControlFeaturesEXT{},
+         vk::PhysicalDeviceFragmentShaderBarycentricFeaturesKHR{},
+@@ -624,6 +627,12 @@ bool Instance::CreateDevice() {
+         device_chain.unlink<vk::PhysicalDeviceIndexTypeUint8FeaturesEXT>();
+     }
+ 
++    if (has_robustness2) {
++        FEAT_SET(vk::PhysicalDeviceRobustness2FeaturesEXT, nullDescriptor, null_descriptor)
++    } else {
++        device_chain.unlink<vk::PhysicalDeviceRobustness2FeaturesEXT>();
++    }
++
+     if (has_fragment_shader_interlock) {
+         FEAT_SET(vk::PhysicalDeviceFragmentShaderInterlockFeaturesEXT, fragmentShaderPixelInterlock,
+                  fragment_shader_interlock)
+diff --git a/src/video_core/renderer_vulkan/vk_instance.h b/src/video_core/renderer_vulkan/vk_instance.h
+index 7a24b11..386c751 100644
+--- a/src/video_core/renderer_vulkan/vk_instance.h
++++ b/src/video_core/renderer_vulkan/vk_instance.h
+@@ -173,6 +173,11 @@ public:
+         return index_type_uint8;
+     }
+ 
++    /// Returns true when VK_EXT_robustness2 is supported
++    bool IsNullDescriptorSupported() const {
++        return null_descriptor;
++    }
++
+     /// Returns true when VK_EXT_fragment_shader_interlock is supported
+     bool IsFragmentShaderInterlockSupported() const {
+         return fragment_shader_interlock;
+@@ -375,6 +380,7 @@ protected:
+     bool dynamic_vertex_input{};
+     bool custom_border_color{};
+     bool index_type_uint8{};
++    bool null_descriptor{};
+     bool fragment_shader_interlock{};
+     bool image_format_list{};
+     bool pipeline_creation_cache_control{};
+diff --git a/src/video_core/renderer_vulkan/vk_rasterizer.cpp b/src/video_core/renderer_vulkan/vk_rasterizer.cpp
+index 01ba536..da5d0d4 100644
+--- a/src/video_core/renderer_vulkan/vk_rasterizer.cpp
++++ b/src/video_core/renderer_vulkan/vk_rasterizer.cpp
+@@ -230,16 +230,19 @@ RasterizerVulkan::RasterizerVulkan(Memory::MemorySystem& memory, Pica::PicaCore&
+     Surface& null_surface = res_cache.GetSurface(VideoCore::NULL_SURFACE_ID);
+     Sampler& null_sampler = res_cache.GetSampler(VideoCore::NULL_SAMPLER_ID);
+ 
++    const vk::ImageView null_surface_view =
++        instance.IsNullDescriptorSupported() ? vk::ImageView{} : null_surface.ImageView();
++    const vk::ImageView null_surface_storage_view =
++        instance.IsNullDescriptorSupported() ? vk::ImageView{} : null_surface.StorageView();
++
+     // Prepare texture and utility descriptor sets.
+     for (u32 i = 0; i < 3; i++) {
+-        update_queue.AddImageSampler(texture_set, i, 0, null_surface.ImageView(),
+-                                     null_sampler.Handle());
++        update_queue.AddImageSampler(texture_set, i, 0, null_surface_view, null_sampler.Handle());
+     }
+ 
+     const auto utility_set = pipeline_cache.Acquire(DescriptorHeapType::Utility);
+-    update_queue.AddStorageImage(utility_set, 0, null_surface.StorageView());
+-    update_queue.AddImageSampler(utility_set, 1, 0, null_surface.ImageView(),
+-                                 null_sampler.Handle());
++    update_queue.AddStorageImage(utility_set, 0, null_surface_storage_view);
++    update_queue.AddImageSampler(utility_set, 1, 0, null_surface_view, null_sampler.Handle());
+     update_queue.Flush();
+ }
+ 
+@@ -1492,17 +1495,27 @@ void RasterizerVulkan::SyncTextureUnits(const Framebuffer* framebuffer) {
+             switch (texture.config.type.Value()) {
+             case TextureType::TextureCube:
+             case TextureType::ShadowCube: {
+-                Surface& null_surface = res_cache.GetSurface(VideoCore::NULL_SURFACE_CUBE_ID);
+                 const Sampler& null_sampler = res_cache.GetSampler(VideoCore::NULL_SURFACE_CUBE_ID);
+-                update_queue.AddImageSampler(texture_set, texture_index, 0,
+-                                             null_surface.ImageView(), null_sampler.Handle());
++                if (instance.IsNullDescriptorSupported()) {
++                    update_queue.AddImageSampler(texture_set, texture_index, 0, vk::ImageView{},
++                                                 null_sampler.Handle());
++                } else {
++                    Surface& null_surface = res_cache.GetSurface(VideoCore::NULL_SURFACE_CUBE_ID);
++                    update_queue.AddImageSampler(texture_set, texture_index, 0,
++                                                 null_surface.ImageView(), null_sampler.Handle());
++                }
+                 break;
+             }
+             default: {
+-                Surface& null_surface = res_cache.GetSurface(VideoCore::NULL_SURFACE_ID);
+                 const Sampler& null_sampler = res_cache.GetSampler(VideoCore::NULL_SURFACE_ID);
+-                update_queue.AddImageSampler(texture_set, texture_index, 0,
+-                                             null_surface.ImageView(), null_sampler.Handle());
++                if (instance.IsNullDescriptorSupported()) {
++                    update_queue.AddImageSampler(texture_set, texture_index, 0, vk::ImageView{},
++                                                 null_sampler.Handle());
++                } else {
++                    Surface& null_surface = res_cache.GetSurface(VideoCore::NULL_SURFACE_ID);
++                    update_queue.AddImageSampler(texture_set, texture_index, 0,
++                                                 null_surface.ImageView(), null_sampler.Handle());
++                }
+                 break;
+             }
+             }
+@@ -1592,8 +1605,12 @@ void RasterizerVulkan::SyncUtilityTextures(const Framebuffer* framebuffer) {
+         Surface& shadow_surface = res_cache.GetStorageTextureSurface(shadow_texture);
+         update_queue.AddStorageImage(utility_set, 0, shadow_surface.StorageView());
+     } else {
+-        Surface& null_surface = res_cache.GetSurface(VideoCore::NULL_SURFACE_ID);
+-        update_queue.AddStorageImage(utility_set, 0, null_surface.StorageView());
++        if (instance.IsNullDescriptorSupported()) {
++            update_queue.AddStorageImage(utility_set, 0, vk::ImageView{});
++        } else {
++            Surface& null_surface = res_cache.GetSurface(VideoCore::NULL_SURFACE_ID);
++            update_queue.AddStorageImage(utility_set, 0, null_surface.StorageView());
++        }
+     }
+ }
+ 

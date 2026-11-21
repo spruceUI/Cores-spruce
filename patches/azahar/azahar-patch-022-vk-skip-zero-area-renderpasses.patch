@@ -1,0 +1,27 @@
+Re-cut by cores-experimental from christianhaitian/rk3566_core_builds@e76af81 patches/azahar-patch-022-vk-skip-zero-area-renderpasses.patch: the same change,
+regenerated so that git apply takes it (GNU patch applies the original with fuzz after patch 000).
+
+diff --git a/src/video_core/renderer_vulkan/vk_rasterizer.cpp b/src/video_core/renderer_vulkan/vk_rasterizer.cpp
+index 9a20dc1..a81f8cc 100644
+--- a/src/video_core/renderer_vulkan/vk_rasterizer.cpp
++++ b/src/video_core/renderer_vulkan/vk_rasterizer.cpp
+@@ -1211,6 +1211,11 @@ bool RasterizerVulkan::Draw(bool accelerate, bool is_indexed) {
+         return true;
+     }
+ 
++    const auto draw_rect = fb_helper.DrawRect();
++    if (draw_rect.GetHeight() * draw_rect.GetHeight() == 0) {
++        return true;
++    }
++
+     pipeline_info.state.attachments.color = framebuffer->Format(SurfaceType::Color);
+     pipeline_info.state.attachments.depth = framebuffer->Format(SurfaceType::Depth);
+ 
+@@ -1248,7 +1253,6 @@ bool RasterizerVulkan::Draw(bool accelerate, bool is_indexed) {
+     UploadUniforms(accelerate);
+ 
+     // Begin rendering
+-    const auto draw_rect = fb_helper.DrawRect();
+     renderpass_cache.BeginRendering(framebuffer, draw_rect);
+     gamma_dump_query = -1;
+     if (GammaDump::d.active) {

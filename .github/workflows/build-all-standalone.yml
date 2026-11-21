@@ -1,0 +1,35 @@
+name: Build All Standalones
+
+# The standalone emulators and apps spruce ships, each from its cores-experimental recipes
+# (scripts/standalone/). Build All Cores packages only cores, so these run on their own.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bigpemu:
+    uses: ./.github/workflows/build-bigpemu.yml
+
+  flycast-standalone:
+    uses: ./.github/workflows/build-flycast-standalone.yml
+
+  gvu:
+    uses: ./.github/workflows/build-gvu.yml
+
+  gametank-standalone:
+    uses: ./.github/workflows/build-gametank-standalone.yml
+
+  mupen64plus-standalone:
+    uses: ./.github/workflows/build-mupen64plus-standalone.yml
+
+  ppsspp:
+    uses: ./.github/workflows/build-ppsspp.yml
+
+  scummvm:
+    uses: ./.github/workflows/build-scummvm.yml
+
+  vtree:
+    uses: ./.github/workflows/build-vtree.yml

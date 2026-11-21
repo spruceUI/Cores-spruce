@@ -1,0 +1,207 @@
+Generated from spruceUI/GameTank-spruce@2734536b:patches/common/handheld_menu.py against
+clydeshaffer/GameTankEmulator 9896544460d5 (2026-09-28). Apply in order (1 of 3).
+
+diff --git a/src/gte.cpp b/src/gte.cpp
+index 4ade1f3..be67d35 100644
+--- a/src/gte.cpp
++++ b/src/gte.cpp
+@@ -1033,105 +1033,69 @@ void refreshScreen() {
+ 	ImGui::NewFrame();
+ 	if(showMenu) {
+ #ifndef WRAPPER_MODE
+-		if(ImGui::BeginMainMenuBar()) {
+-			if (ImGui::BeginMenu("File")) {
+-				if(ImGui::MenuItem("Open Rom")) {
+-					const char* rom_file_name = open_rom_dialog();
+-					if(rom_file_name) {
+-						LoadRomFile(rom_file_name);
+-					}	
+-				}
+-				if(ImGui::MenuItem("Exit")) {
+-					running = false;
+-				}
+-				ImGui::EndMenu();
+-			}
+-			if(ImGui::BeginMenu("Settings")) {
+-				if(ImGui::MenuItem("Controllers")) {
+-					toggleControllerOptionsWindow();
+-				}
+-				ImGui::MenuItem("Toggle Instant Blits", NULL, &(blitter->instant_mode));
+-				ImGui::SliderInt("Volume", &AudioCoprocessor::singleton_acp_state->volume, 0, 256);
+-				ImGui::Checkbox("Mute", &AudioCoprocessor::singleton_acp_state->isMuted);
+-				if (ImGui::BeginMenu("Paddle Support")) {
+-					if (ImGui::Checkbox("Enable Mouse Paddle", &mouse_paddle_enabled)) {
+-						joysticks->SetHeldButtons(0);//clear bits on change just in case
+-					}
+-					if (ImGui::Checkbox("Enable Joystick Paddle", &joystick_paddle_enabled)) {
+-						joysticks->SetHeldButtons(0);//clear bits on change just in case
+-					}
+-					ImGui::EndMenu();
+-				}
+-				if(ImGui::BeginMenu("Pallete")) {
+-					ImGui::RadioButton("Unscaled Capture", &palette_select, PALETTE_SELECT_CAPTURE);
+-					ImGui::RadioButton("Full Contrast", &palette_select, PALETTE_SELECT_SCALED);
+-					ImGui::RadioButton("Cheap HDMI converter", &palette_select, PALETTE_SELECT_HDMI);
+-					ImGui::RadioButton("Flawed Theory (Legacy)", &palette_select, PALETTE_SELECT_OLD);
+-					ImGui::EndMenu();
+-				}
+-				if(ImGui::BeginMenu("Scale")) {
+-					int prev_scale = display_scale;
+-					ImGui::RadioButton("2x", &display_scale, 2);
+-					ImGui::RadioButton("3x", &display_scale, 3);
+-					ImGui::RadioButton("4x", &display_scale, 4);
+-					ImGui::RadioButton("5x", &display_scale, 5);
+-					ImGui::RadioButton("6x", &display_scale, 6);
+-					if(display_scale != prev_scale && !isFullScreen) {
+-						SDL_SetWindowSize(mainWindow, viewport_width(display_scale), viewport_height(display_scale));
+-					}
+-					ImGui::EndMenu();
+-				}
+-				if(ImGui::BeginMenu("Grid")) {
+-					ImGui::RadioButton("No grid", &grid_mode, GRID_NONE);
+-					ImGui::RadioButton("25% opacity", &grid_mode, GRID_25);
+-					ImGui::RadioButton("50% opacity", &grid_mode, GRID_50);
+-					ImGui::RadioButton("Full black grid", &grid_mode, GRID_FULL);
+-					ImGui::EndMenu();
+-				}
+-				ImGui::EndMenu();
+-			}
+-			if(ImGui::BeginMenu("Tools")) {
+-				if(ImGui::MenuItem("Profiler (F12)")) {
+-					toggleProfilerWindow();
+-				}
+-				if(ImGui::MenuItem("Memory Browser (F9)")) {
+-					toggleMemBrowserWindow();
+-				}
+-				if(ImGui::MenuItem("VRAM Viewer (F10)")) {
+-					toggleVRAMWindow();
+-				}
+-				if(ImGui::MenuItem("Code Stepper (F7)")) {
+-					toggleSteppingWindow();
+-				}
+-				if(ImGui::MenuItem("Patching Window")) {
+-					togglePatchingWindow();
+-				}
+-				if(ImGui::MenuItem("Update Patches")) {
+-					gameconfig->UpdateAllPatches(cartridge_state.rom);
+-				}
+-				if(ImGui::MenuItem("Dump RAM to file (F6)")) {
+-					doRamDump();
+-				}
+-				if(ImGui::BeginMenu("Deep Profile")) {
+-					if(ImGui::MenuItem("Single Vsync")) {
+-						vsyncProfileArmed = true;
+-					}
+-					if(ImGui::IsItemHovered()) {
+-						ImGui::SetTooltip("Capture function call timing between the next two VSyncs");
+-					}
+-					if(ImGui::MenuItem("Single Frame Flip")) {
+-						frameFlipProfileArmed = true;
+-						frameFlipProfileVsyncLimit = MAX_FRAME_FLIP_PROFILE_VSYNCS;
+-					}
+-					if(ImGui::IsItemHovered()) {
+-						ImGui::SetTooltip("Capture function call timing between the next two frame flips. Capped at 8 VSync periods");
+-					}
+-					ImGui::EndMenu();
+-				}
+-				ImGui::EndMenu();
+-			}
+-			ImGui::EndMainMenuBar();
++		ImGui::SetNextWindowPos(ImVec2(0, 0));
++		ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
++		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
++		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
++		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0.5f));
++		ImGui::Begin("OverlayBackground", nullptr,
++			ImGuiWindowFlags_NoDecoration |
++			ImGuiWindowFlags_NoInputs |
++			ImGuiWindowFlags_NoMove |
++			ImGuiWindowFlags_NoBringToFrontOnFocus);
++		ImGui::End();
++		ImGui::PopStyleColor();
++		ImGui::PopStyleVar(2);
++
++		ImGui::SetNextWindowPos(ImVec2(20, 20), ImGuiCond_Always);
++		ImGui::SetNextWindowBgAlpha(0.9f);
++		if(!ImGui::IsAnyItemFocused()) {
++			ImGui::SetNextWindowFocus();
+ 		}
++		menuOpening = false;
++		ImGui::Begin("MainMenu", nullptr,
++			ImGuiWindowFlags_AlwaysAutoResize |
++			ImGuiWindowFlags_NoCollapse |
++			ImGuiWindowFlags_NoMove |
++			ImGuiWindowFlags_NoSavedSettings |
++			ImGuiWindowFlags_NoTitleBar);
++		ImGui::SetWindowFontScale(2.0f);
++		if (ImGui::IsWindowAppearing())
++			ImGui::SetKeyboardFocusHere(-1);
++
++		if(ImGui::Selectable("Reset")) {
++			resetQueued = 2;
++			showMenu = false;
++			setMenuMute(showMenu);
++			joysticks->Reset();
++		}
++		ImGui::SliderInt("Volume", &AudioCoprocessor::singleton_acp_state->volume, 0, 256, "", ImGuiSliderFlags_NoInput);
++		bool appMute = (muteMask & MUTE_SOURCE_MANUAL) != 0;
++		ImGui::Checkbox("Mute Audio", &appMute);
++		if(appMute) muteMask |= MUTE_SOURCE_MANUAL;
++		else muteMask &= ~MUTE_SOURCE_MANUAL;
++		AudioCoprocessor::singleton_acp_state->isMuted = (muteMask != 0);
++		ImGui::Separator();
++		if(ImGui::BeginMenu("Palette")) {
++			ImGui::RadioButton("Unscaled Capture", &palette_select, PALETTE_SELECT_CAPTURE);
++			ImGui::RadioButton("Full Contrast", &palette_select, PALETTE_SELECT_SCALED);
++			ImGui::RadioButton("Cheap HDMI converter", &palette_select, PALETTE_SELECT_HDMI);
++			ImGui::RadioButton("Flawed Theory (Legacy)", &palette_select, PALETTE_SELECT_OLD);
++			ImGui::EndMenu();
++		}
++		if(ImGui::BeginMenu("Grid")) {
++			ImGui::RadioButton("No grid", &grid_mode, GRID_NONE);
++			ImGui::RadioButton("25% opacity", &grid_mode, GRID_25);
++			ImGui::RadioButton("50% opacity", &grid_mode, GRID_50);
++			ImGui::RadioButton("Full black grid", &grid_mode, GRID_FULL);
++			ImGui::EndMenu();
++		}
++		ImGui::Checkbox("Instant Blits", &(blitter->instant_mode));
++		ImGui::Separator();
++		if(ImGui::Selectable("Exit")) {
++			running = false;
++		}
++		ImGui::End();
+ #else
+ 		ImGui::SetNextWindowPos(ImVec2(0, 0));
+ 		ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+@@ -1262,11 +1226,7 @@ else {
+ 	
+ #endif
+ 
+-#ifdef WRAPPER_MODE
+ 	if(!paused && !showMenu) {
+-#else
+-	if(!paused) {
+-#endif
+ 			timekeeper.actual_cycles = timekeeper.totalCyclesCount;
+ #ifndef WASM_BUILD
+ 			switch(timekeeper.clock_mode) {
+@@ -1453,9 +1413,7 @@ else {
+ 								if(e.type == SDL_KEYDOWN) {
+ 									showMenu = !showMenu;
+ 									menuOpening = showMenu;
+-	#ifdef WRAPPER_MODE
+ 									setMenuMute(showMenu);
+-	#endif
+ 								}
+ 								#endif
+ 								break;
+@@ -1527,9 +1485,7 @@ else {
+ 	#if !defined(DISABLE_ESC)
+ 									showMenu = !showMenu;
+ 									menuOpening = showMenu;
+-	#ifdef WRAPPER_MODE
+ 									setMenuMute(showMenu);
+-	#endif
+ 	#endif
+ 		}
+ 

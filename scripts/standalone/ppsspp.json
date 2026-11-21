@@ -1,0 +1,181 @@
+{
+  "ppsspp-h700": {
+    "image": "cores-standalone-ppsspp:v1",
+    "archive": "cores-standalone-ppsspp-v1.tar.gz",
+    "archive_sha256": "032f6574f5f2d67dd7b4544cec071b0b661900ba1ecb0915e548c7fc2e99d716",
+    "spruce": {
+      "PPSSPPSDL_h700": "Emu/PSP/PPSSPPSDL_h700",
+      "assets/": "Emu/PSP/assets/"
+    },
+    "shipped": {
+      "PPSSPPSDL_h700": "c1e928aab424c6aeb0fc38e8b5e24b49894fe46c2e0f06bb42f3e07d70cbd801"
+    },
+    "device_libs": [
+      "ld-linux-aarch64.so.1",
+      "libEGL.so.1",
+      "libGLESv2.so.2",
+      "libSDL2-2.0.so.0",
+      "libc.so.6",
+      "libdl.so.2",
+      "libgcc_s.so.1",
+      "libm.so.6",
+      "libpthread.so.0",
+      "librt.so.1",
+      "libstdc++.so.6",
+      "libz.so.1"
+    ],
+    "forbidden_libs": [
+      "libmali.so.0",
+      "libvulkan.so.1"
+    ]
+  },
+  "ppsspp-a30": {
+    "image": "cores-standalone-armhf:v1",
+    "archive": "cores-standalone-armhf-v1.tar.gz",
+    "archive_sha256": "22ae3091ab280955bef98020e71a9c94bfc1890e4a8730c42ebcefdaaa5244a1",
+    "spruce": {
+      "PPSSPPSDL_A30": "Emu/PSP/PPSSPPSDL_A30"
+    },
+    "shipped": {
+      "PPSSPPSDL_A30": "f90781d39e82f0e4c7b71f2ec097414bddc195a45336ead87cfa0625a44516b9"
+    },
+    "device_libs": [
+      "ld-linux-armhf.so.3",
+      "libEGL.so",
+      "libGLESv2.so",
+      "libSDL2-2.0.so.0",
+      "libatomic.so.1",
+      "libc.so.6",
+      "libdl.so.2",
+      "libgcc_s.so.1",
+      "libm.so.6",
+      "libpthread.so.0",
+      "librt.so.1",
+      "libz.so.1"
+    ],
+    "forbidden_libs": [
+      "libstdc++.so.6"
+    ]
+  },
+  "ppsspp-flip": {
+    "image": "cores-standalone-flip:v1",
+    "archive": "cores-standalone-flip-v1.tar.gz",
+    "archive_sha256": "e812dfb2f8e31c892a4bcc3a1c1447b8b3706aa95485e8deebe1230622b45505",
+    "spruce": {
+      "PPSSPPSDL_Flip": "Emu/PSP/PPSSPPSDL_Flip"
+    },
+    "shipped": {
+      "PPSSPPSDL_Flip": "73ff291ce0c716da0c40396a1e39ee91fe277246ebb43804c8716e91a06d18ef"
+    },
+    "device_libs": [
+      "ld-linux-aarch64.so.1",
+      "libEGL.so.1",
+      "libGLESv2.so.2",
+      "libSDL2-2.0.so.0",
+      "libc.so.6",
+      "libgcc_s.so.1",
+      "libm.so.6",
+      "libstdc++.so.6",
+      "libz.so.1"
+    ],
+    "forbidden_libs": []
+  },
+  "ppsspp-darkmoss3566": {
+    "image": "cores-standalone-flip:v1",
+    "archive": "cores-standalone-flip-v1.tar.gz",
+    "archive_sha256": "e812dfb2f8e31c892a4bcc3a1c1447b8b3706aa95485e8deebe1230622b45505",
+    "spruce": {
+      "PPSSPPSDL_dArkMoss3566": "Emu/PSP/PPSSPPSDL_dArkMoss3566"
+    },
+    "shipped": {
+      "PPSSPPSDL_dArkMoss3566": "621bef60ae7c360acdfbd445358e58c9f930e087c20a4273673f7c477415394d"
+    },
+    "device_libs": [
+      "ld-linux-aarch64.so.1",
+      "libEGL.so.1",
+      "libGLESv2.so.2",
+      "libSDL2-2.0.so.0",
+      "libc.so.6",
+      "libgcc_s.so.1",
+      "libm.so.6",
+      "libstdc++.so.6",
+      "libz.so.1"
+    ],
+    "forbidden_libs": []
+  },
+  "ppsspp-darkmoss3326": {
+    "image": "cores-standalone-flip:v1",
+    "archive": "cores-standalone-flip-v1.tar.gz",
+    "archive_sha256": "e812dfb2f8e31c892a4bcc3a1c1447b8b3706aa95485e8deebe1230622b45505",
+    "spruce": {
+      "PPSSPPSDL_dArkMoss3326": "Emu/PSP/PPSSPPSDL_dArkMoss3326"
+    },
+    "shipped": {
+      "PPSSPPSDL_dArkMoss3326": "5221dcc2d0a18592cb5a43424c765f06ab46a4c59b4bf827c2578c724e3ad264"
+    },
+    "device_libs": [
+      "ld-linux-aarch64.so.1",
+      "libEGL.so.1",
+      "libGLESv2.so.2",
+      "libSDL2-2.0.so.0",
+      "libc.so.6",
+      "libgcc_s.so.1",
+      "libm.so.6",
+      "libstdc++.so.6",
+      "libz.so.1"
+    ],
+    "forbidden_libs": []
+  },
+  "ppsspp-trimui": {
+    "image": "cores-standalone-trimui:v1",
+    "archive": "cores-standalone-trimui-v1.tar.gz",
+    "archive_sha256": "2432df6e568d5aee7a80505c93c89d3243f721101a61c57e5b12476becb23e1d",
+    "spruce": {
+      "PPSSPPSDL_TrimUI": "Emu/PSP/PPSSPPSDL_TrimUI"
+    },
+    "shipped": {
+      "PPSSPPSDL_TrimUI": "d0635cdb73e046cf8c62a92a4c59194cf9a80dfabbe08a0c9a0cb4628a1c96d7"
+    },
+    "device_libs": [
+      "ld-linux-aarch64.so.1",
+      "libEGL.so.1",
+      "libGLESv2.so.2",
+      "libSDL2-2.0.so.0",
+      "libc.so.6",
+      "libdl.so.2",
+      "libgcc_s.so.1",
+      "libm.so.6",
+      "libpthread.so.0",
+      "librt.so.1",
+      "libz.so.1"
+    ],
+    "forbidden_libs": []
+  },
+  "ppsspp-smartpros": {
+    "image": "cores-standalone-tsps:v1",
+    "archive": "cores-standalone-tsps-v1.tar.gz",
+    "archive_sha256": "65ed5e2bf80e02a864fcc3fc1b4942bfd46a9f8460d8d52906af041df72d308b",
+    "spruce": {
+      "PPSSPPSDL_SmartProS": "Emu/PSP/PPSSPPSDL_SmartProS"
+    },
+    "shipped": {
+      "PPSSPPSDL_SmartProS": "54c9e8b1f1de58d546a27793129052d2539805997047433f02de8780bbff00f0"
+    },
+    "device_libs": [
+      "ld-linux-aarch64.so.1",
+      "libEGL.so.1",
+      "libGLESv2.so.2",
+      "libSDL2-2.0.so.0",
+      "libc.so.6",
+      "libdl.so.2",
+      "libgcc_s.so.1",
+      "libm.so.6",
+      "libmali.so.0",
+      "libpthread.so.0",
+      "librt.so.1",
+      "libstdc++.so.6",
+      "libz.so.1"
+    ],
+    "forbidden_libs": []
+  }
+}

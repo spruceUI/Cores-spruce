@@ -49,3 +49,9 @@ jobs:
 
   core_yabadabadoo:
     uses: ./.github/workflows/build-yabadabadoo.yml
+
+  core_azahar:
+    uses: ./.github/workflows/build-azahar.yml
+
+  core_yabasanshiro_generic:
+    uses: ./.github/workflows/build-yabasanshiro_generic.yml

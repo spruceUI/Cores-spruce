@@ -1,0 +1,139 @@
+{
+  "mupen64plus-arm64-20260404": {
+    "image": "cores-standalone-mupen64plus:v1",
+    "archive": "cores-standalone-mupen64plus-v1.tar.gz",
+    "archive_sha256": "54e556ba531391f94c2aaa562d806250de08e71eaf4f237af3fbf87a654aaece",
+    "spruce": {
+      "mupen64plus": "Emu/N64/mupen64plus/mupen64plus",
+      "libmupen64plus.so.2": "Emu/N64/mupen64plus/libmupen64plus.so.2",
+      "mupen64plus-audio-sdl.so": "Emu/N64/mupen64plus/mupen64plus-audio-sdl.so",
+      "mupen64plus-input-sdl.so": "Emu/N64/mupen64plus/mupen64plus-input-sdl.so",
+      "mupen64plus-rsp-hle.so": "Emu/N64/mupen64plus/mupen64plus-rsp-hle.so"
+    },
+    "shipped": {
+      "mupen64plus": "4935f5bb7f79ed3e5e7531ec650c9f8cc0d8105a60021a47a3531c5caa449fa6",
+      "libmupen64plus.so.2": "e827ff2fe7a997cca388e0e506394a366990740a7f5712c79ad2182c217797e6",
+      "mupen64plus-audio-sdl.so": "d861d923f80967686ef9d101af00377e817ecf9378d24044b87b0a3896c4f907",
+      "mupen64plus-input-sdl.so": "f73249aa5ef99588df5fc191996fdd4e7f091d3daeb9395052582bf8d7dcfdbf",
+      "mupen64plus-rsp-hle.so": "c36d4b0c787a007694eabc0dd7145fb171e9f1b15eea4d472b9d87f70b67141c"
+    },
+    "device_libs": [
+      "ld-linux-aarch64.so.1",
+      "libEGL.so.1",
+      "libGLESv2.so.2",
+      "libSDL2-2.0.so.0",
+      "libc.so.6",
+      "libdl.so.2",
+      "libfreetype.so.6",
+      "libgcc_s.so.1",
+      "libm.so.6",
+      "libpng16.so.16",
+      "libpthread.so.0",
+      "libstdc++.so.6",
+      "libz.so.1"
+    ],
+    "forbidden_libs": []
+  },
+  "mupen64plus-arm64": {
+    "image": "cores-standalone-mupen64plus:v1",
+    "archive": "cores-standalone-mupen64plus-v1.tar.gz",
+    "archive_sha256": "54e556ba531391f94c2aaa562d806250de08e71eaf4f237af3fbf87a654aaece",
+    "spruce": {
+      "overlay_settings.json": "Emu/N64/mupen64plus/overlay_settings.json",
+      "mupen64plus-video-rice.so": "Emu/N64/mupen64plus/mupen64plus-video-rice.so",
+      "mupen64plus-video-glide64mk2.so": "Emu/N64/mupen64plus/mupen64plus-video-glide64mk2.so"
+    },
+    "shipped": {
+      "mupen64plus-video-rice.so": "ea790719059f7513596763d140f5c254c727a5ca093272a2100a0ddd5e132a23",
+      "mupen64plus-video-glide64mk2.so": "bc867190fd188234f9c9466104fecf694fa2aa4ed90f689cb3025394b1d50dde",
+      "overlay_settings.json": "1c9d8491ac863ad83bcd4696d966646f0c44688649e0ee41f7ace26115c87254"
+    },
+    "device_libs": [
+      "ld-linux-aarch64.so.1",
+      "libEGL.so.1",
+      "libGLESv2.so.2",
+      "libSDL2-2.0.so.0",
+      "libSDL2_ttf-2.0.so.0",
+      "libc.so.6",
+      "libdl.so.2",
+      "libfreetype.so.6",
+      "libgcc_s.so.1",
+      "libm.so.6",
+      "libpng16.so.16",
+      "libpthread.so.0",
+      "libstdc++.so.6",
+      "libz.so.1"
+    ],
+    "forbidden_libs": []
+  },
+  "mupen64plus-arm64-gliden64-ovl": {
+    "image": "cores-standalone-mupen64plus:v1",
+    "archive": "cores-standalone-mupen64plus-v1.tar.gz",
+    "archive_sha256": "54e556ba531391f94c2aaa562d806250de08e71eaf4f237af3fbf87a654aaece",
+    "spruce": {
+      "mupen64plus-video-GLideN64.so": "Emu/N64/mupen64plus/mupen64plus-video-GLideN64.so"
+    },
+    "shipped": {
+      "mupen64plus-video-GLideN64.so": "ffbf531b00558eecc94d68182b99b10780e19a2beffa3d9a6174f8685d28c46f"
+    },
+    "device_libs": [
+      "ld-linux-aarch64.so.1",
+      "libEGL.so.1",
+      "libGLESv2.so.2",
+      "libSDL2-2.0.so.0",
+      "libSDL2_ttf-2.0.so.0",
+      "libc.so.6",
+      "libdl.so.2",
+      "libfreetype.so.6",
+      "libgcc_s.so.1",
+      "libm.so.6",
+      "libpng16.so.16",
+      "libpthread.so.0",
+      "libstdc++.so.6",
+      "libz.so.1"
+    ],
+    "forbidden_libs": []
+  },
+  "mupen64plus-a30": {
+    "image": "cores-standalone-armhf:v1",
+    "archive": "cores-standalone-armhf-v1.tar.gz",
+    "archive_sha256": "22ae3091ab280955bef98020e71a9c94bfc1890e4a8730c42ebcefdaaa5244a1",
+    "spruce": {
+      "mupen64plus": "Emu/N64/mupen64plus-a30/mupen64plus",
+      "a30_input_shim": "Emu/N64/mupen64plus-a30/a30_input_shim",
+      "libmupen64plus.so.2": "Emu/N64/mupen64plus-a30/libmupen64plus.so.2",
+      "mupen64plus-audio-sdl.so": "Emu/N64/mupen64plus-a30/mupen64plus-audio-sdl.so",
+      "mupen64plus-input-sdl.so": "Emu/N64/mupen64plus-a30/mupen64plus-input-sdl.so",
+      "mupen64plus-rsp-hle.so": "Emu/N64/mupen64plus-a30/mupen64plus-rsp-hle.so",
+      "mupen64plus-video-rice.so": "Emu/N64/mupen64plus-a30/mupen64plus-video-rice.so",
+      "mupen64plus-video-glide64mk2.so": "Emu/N64/mupen64plus-a30/mupen64plus-video-glide64mk2.so",
+      "mupen64plus-video-GLideN64.so": "Emu/N64/mupen64plus-a30/mupen64plus-video-GLideN64.so"
+    },
+    "shipped": {
+      "mupen64plus": "0f772b46b345a4f08507e68848d0385c9b4f48a83b95e9a5318a91cebf9a4907",
+      "a30_input_shim": "19eb4fc3d473daa8d0151496f29f6b3525847f06feef7bb10257fd198d062767",
+      "libmupen64plus.so.2": "85242a2e25bfcea17b84db3abb3b67b8676b05901b697b1842472fd5df19c06b",
+      "mupen64plus-audio-sdl.so": "7977842c08d5d585aa91d14f85ca3fae901d85906fe1faf4f3e9521b3bf5b2a0",
+      "mupen64plus-input-sdl.so": "26baec5fc44cc1c122405c6cdab07a1460a82edd23c7c5713d14f385c98c16e0",
+      "mupen64plus-rsp-hle.so": "985170d95494ed4f99415005fac25dd991d3fbfe120c6f84e6669a05cfe46b01",
+      "mupen64plus-video-rice.so": "df77dd4f29d69e0840b6011dd157a941abea225ab92635a0cd0009f91a3e5e54",
+      "mupen64plus-video-glide64mk2.so": "0e677e614491dc4ad3b5363306013c6d82d4c98f4fb00e988be1c7d9d248cb35",
+      "mupen64plus-video-GLideN64.so": "21cde177bbcbca6c95ebf626ebbb579b5b92b3ba5c3e33b1cb09e375d2ce41c2"
+    },
+    "device_libs": [
+      "ld-linux-armhf.so.3",
+      "libEGL.so",
+      "libGLESv2.so",
+      "libSDL2-2.0.so.0",
+      "libc.so.6",
+      "libdl.so.2",
+      "libfreetype.so.6",
+      "libgcc_s.so.1",
+      "libm.so.6",
+      "libpng16.so.16",
+      "libpthread.so.0",
+      "libz.so.1"
+    ],
+    "forbidden_libs": []
+  }
+}
