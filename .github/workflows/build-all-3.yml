@@ -20,6 +20,9 @@ jobs:
   core_armnes_arcade:
     uses: ./.github/workflows/build-armnes_arcade.yml
 
+  core_armsnes:
+    uses: ./.github/workflows/build-armsnes.yml
+
   core_dsperate:
     uses: ./.github/workflows/build-dsperate.yml
 
