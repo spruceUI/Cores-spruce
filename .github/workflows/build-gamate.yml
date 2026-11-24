@@ -60,7 +60,7 @@ jobs:
           cat > output/info/gamate_libretro.info <<EOF
           display_name = "Gamate (evolver)"
           authors = "evolver79"
-          supported_extensions = "bin"
+          supported_extensions = "bin|gmt"
           corename = "gamate"
           manufacturer = "Bit Corporation"
           categories = "Emulator"
