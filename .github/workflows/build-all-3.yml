@@ -35,6 +35,9 @@ jobs:
   core_gloopy:
     uses: ./.github/workflows/build-gloopy.yml
 
+  core_gamate:
+    uses: ./.github/workflows/build-gamate.yml
+
   core_gametank:
     uses: ./.github/workflows/build-gametank.yml
 

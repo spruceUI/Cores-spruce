@@ -1,0 +1,121 @@
+name: Build gamate
+
+on:
+  workflow_dispatch:
+    inputs:
+      core_ref:
+        description: 'Core git ref (commit/tag/branch, blank for latest)'
+        default: ''
+  workflow_call:
+    inputs:
+      core_ref:
+        type: string
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure beta release exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="beta-${{ github.ref_name }}"
+          gh release view "$TAG" >/dev/null 2>&1 || \
+            gh release create "$TAG" \
+              --target "${{ github.ref_name }}" \
+              --title "Beta Build (${{ github.ref_name }})" \
+              --prerelease \
+              --notes "Core builds from ${{ github.ref_name }}" \
+            || true
+
+      - name: Download Docker images
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download toolchains --pattern "cores-arm64.tar.gz" --dir .
+          gh release download toolchains --pattern "cores-armhf.tar.gz" --dir .
+
+      - name: Load Docker images
+        run: |
+          gunzip -c cores-arm64.tar.gz | docker load
+          gunzip -c cores-armhf.tar.gz | docker load
+
+      # evolver79's Gamate core from the NextUI pak; the repo has no .info, so it is written here
+      - name: Clone gamate
+        run: |
+          git clone https://github.com/evolver79/nextui-gamate-pak.git gamate
+          REF="${{ inputs.core_ref }}"
+          if [ -n "$REF" ]; then
+            git -C gamate checkout "$REF"
+          fi
+          VERSION="$(jq -r '.version // empty' gamate/pak.json) $(git -C gamate rev-parse --short HEAD)"
+          mkdir -p output/info
+          cp gamate/LICENSE gamate/LICENSE-MAME output/
+          cat > output/info/gamate_libretro.info <<EOF
+          display_name = "Gamate (evolver)"
+          authors = "evolver79"
+          supported_extensions = "bin"
+          corename = "gamate"
+          manufacturer = "Bit Corporation"
+          categories = "Emulator"
+          systemname = "Gamate"
+          database = "Gamate"
+          license = "MIT"
+          permissions = ""
+          display_version = "${VERSION# }"
+          supports_no_game = "false"
+          savestate = "true"
+          savestate_features = "serialized"
+          firmware_count = 2
+          firmware0_desc = "gamate_bios_umc.bin (UMC Gamate BIOS; either BIOS permitted)"
+          firmware0_path = "gamate_bios_umc.bin"
+          firmware0_opt = "true"
+          firmware1_desc = "gamate_bios_bit.bin (Bit Gamate BIOS; either BIOS permitted)"
+          firmware1_path = "gamate_bios_bit.bin"
+          firmware1_opt = "true"
+          EOF
+          sed -i 's/^ *//' output/info/gamate_libretro.info
+          cat output/info/gamate_libretro.info
+
+      - name: Build arm64
+        run: |
+          mkdir -p output/cores64
+          docker run --rm -v ${{ github.workspace }}/gamate:/gamate -v ${{ github.workspace }}/output:/output -w /gamate cores-arm64 \
+            bash -c '
+              make clean && make CFLAGS="-O2" \
+                CC="aarch64-linux-gnu-gcc -march=armv8-a+crc+crypto+simd -mtune=cortex-a53" \
+              && aarch64-linux-gnu-strip gamate_libretro.so \
+              && mv gamate_libretro.so /output/cores64/
+            '
+      - name: Build armhf
+        run: |
+          mkdir -p output/cores
+          docker run --rm -v ${{ github.workspace }}/gamate:/gamate -v ${{ github.workspace }}/output:/output -w /gamate cores-armhf \
+            bash -c '
+              make clean && make CFLAGS="-O2" \
+                CC="arm-a30-linux-gnueabihf-gcc -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard" \
+              && arm-a30-linux-gnueabihf-strip gamate_libretro.so \
+              && mv gamate_libretro.so /output/cores/
+            '
+      - name: Package and upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd output
+          file cores64/gamate_libretro.so cores/gamate_libretro.so || true
+          CONTENTS=""
+          [ -f cores64/gamate_libretro.so ] && CONTENTS="$CONTENTS cores64/"
+          [ -f cores/gamate_libretro.so ] && CONTENTS="$CONTENTS cores/"
+          if [ -n "$CONTENTS" ]; then
+            zip -r gamate_libretro.zip $CONTENTS info/ LICENSE LICENSE-MAME
+            gh release upload "beta-${{ github.ref_name }}" gamate_libretro.zip --clobber
+          else
+            echo "::error::No builds succeeded for gamate"
+            exit 1
+          fi
