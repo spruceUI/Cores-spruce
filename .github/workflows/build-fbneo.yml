@@ -60,6 +60,7 @@ jobs:
                 git -C libretro-fbneo submodule update --init --recursive
               fi
               ./libretro-build.sh fbneo
+              aarch64-linux-gnu-strip --strip-unneeded dist/unix/fbneo_libretro.so
               cp dist/unix/fbneo_libretro.so /output/cores64/
             '
       - name: Build armhf
