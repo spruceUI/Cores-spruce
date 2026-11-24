@@ -88,7 +88,7 @@ jobs:
           mkdir -p output/cores64
           docker run --rm -v ${{ github.workspace }}/gamate:/gamate -v ${{ github.workspace }}/output:/output -w /gamate cores-arm64 \
             bash -c '
-              make clean && make CFLAGS="-O2" \
+              make clean && CFLAGS="-O2 -fno-aggressive-loop-optimizations" make \
                 CC="aarch64-linux-gnu-gcc -march=armv8-a+crc+crypto+simd -mtune=cortex-a53" \
               && aarch64-linux-gnu-strip gamate_libretro.so \
               && mv gamate_libretro.so /output/cores64/
@@ -98,7 +98,7 @@ jobs:
           mkdir -p output/cores
           docker run --rm -v ${{ github.workspace }}/gamate:/gamate -v ${{ github.workspace }}/output:/output -w /gamate cores-armhf \
             bash -c '
-              make clean && make CFLAGS="-O2" \
+              make clean && CFLAGS="-O2 -fno-aggressive-loop-optimizations" make \
                 CC="arm-a30-linux-gnueabihf-gcc -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard" \
               && arm-a30-linux-gnueabihf-strip gamate_libretro.so \
               && mv gamate_libretro.so /output/cores/
