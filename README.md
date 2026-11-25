@@ -34,8 +34,8 @@ Build bot for libretro cores targeting spruceOS handheld devices. Builds 32-bit 
 
 Each recipe below rebuilds, byte for byte, what spruceOS ships
 ([cores-experimental](https://github.com/spruceUI/cores-experimental) checks this; spruceOS `Development` 7592638d0,
-and 46845acd1 for AdvanceMAME, Moonlight, OpenBOR and YabaSanshiro standalone). The scripts in `scripts/standalone/`
-were rendered from cores-experimental 9f6b4d3, and those four from c40801e. Devices are spruce's
+and 46845acd1 for AdvanceMAME, Moonlight, OpenBOR, YabaSanshiro standalone and uae4arm's arm64 half). The scripts in
+`scripts/standalone/` were rendered from cores-experimental 9f6b4d3, and those five from c40801e. Devices are spruce's
 `$PLATFORM` groups (`spruce/scripts/helperFunctions.sh`):
 - `DARKMOSS`: RGB30, RGB20SX, RG353M, E5 Plus, Miniloong, A10 Mini, XU Mini M, G350, V10, Pixel 2 on dArkMoss
 - `OAKMOSS_A133P`: MagicX Zero 28, Zero 40, XU20; Powkiddy V90S, V20
@@ -48,6 +48,7 @@ were rendered from cores-experimental 9f6b4d3, and those four from c40801e. Devi
 | Build azahar (`azahar_libretro.zip`) | `azahar-libretro` | `RetroArch/.retroarch/cores64/azahar_libretro.so` | 3DS default on MIYOO_FLIP, OAKMOSS_A133P, and DARKMOSS's RGB30, RGB20SX, RG353M, E5 Plus and Miniloong |
 | Build yabasanshiro_generic (`yabasanshiro_generic_libretro.zip`) | `yabasanshiro-libretro` | `RetroArch/.retroarch/cores64/yabasanshiro_generic_libretro.so` | Saturn default on DARKMOSS, MIYOO_FLIP, ANBERNIC_RGXX, TRIMUI_SMART_PRO_S, TRIMUI_A133P and OAKMOSS_A133P (GKD_PIXEL2 has its own core) |
 | Build flycast (`flycast_libretro.zip`, its arm64 half) | `flycast-libretro-t3` | `RetroArch/.retroarch/cores64/flycast_libretro.so` | Dreamcast, NAOMI and Atomiswave default on MIYOO_FLIP, TRIMUI_A133P, TRIMUI_SMART_PRO_S, ANBERNIC_RGXX and OAKMOSS_A133P |
+| Build uae4arm (`uae4arm_libretro.zip`, its arm64 half) | `uae4arm-lakka-rpi3-composite-20240502` | `RetroArch/.retroarch/cores64/uae4arm_libretro.so` (Lakka v4.x's RPi3-Composite build) | Amiga default on the 64-bit devices |
 | Build Flycast standalone (`flycast-standalone.zip`) | `flycast-standalone-t3-lto` | `Emu/DC/flycast`, `Emu/DC/lib64/` | Dreamcast default on DARKMOSS; an option for Dreamcast, NAOMI and Atomiswave on the other 64-bit devices (all three run Emu/DC's copy) |
 | Build AdvanceMAME (`advmame.zip`) | `advmame-arm64-20260328` | `Emu/ARCADE/advmame.7z` | an Arcade option on MIYOO_FLIP, TRIMUI_A133P, TRIMUI_SMART_PRO_S, GKD_PIXEL2 and OAKMOSS_A133P |
 | Build BigPEmu (`bigpemu.zip`) | `bigpemu` | `Emu/JAGUAR/bigpemu/` | Jaguar default on MIYOO_FLIP, TRIMUI_A133P, TRIMUI_SMART_PRO_S, GKD_PIXEL2, ANBERNIC_RGXX, DARKMOSS and OAKMOSS_A133P |

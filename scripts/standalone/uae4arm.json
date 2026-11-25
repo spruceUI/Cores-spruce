@@ -1,0 +1,25 @@
+{
+  "uae4arm-lakka-rpi3-composite-20240502": {
+    "image": "cores-standalone-lakka-focal:v1",
+    "archive": "cores-standalone-lakka-focal-v1.tar.gz",
+    "archive_sha256": "8d885bd14dd9e1f7219daf3be29becf18211dfdd6a6cb8b18ee54b457599f494",
+    "spruce": {
+      "cores64/uae4arm_libretro.so": "RetroArch/.retroarch/cores64/uae4arm_libretro.so"
+    },
+    "shipped": {
+      "cores64/uae4arm_libretro.so": "19dcb3d58b17456ec77a6fc2f2ed8680449b3806f08443f05bf143b50404f106"
+    },
+    "device_libs": [
+      "libFLAC.so.8",
+      "libc.so.6",
+      "libdl.so.2",
+      "libgcc_s.so.1",
+      "libm.so.6",
+      "libmpg123.so.0",
+      "libpthread.so.0",
+      "libstdc++.so.6",
+      "libz.so.1"
+    ],
+    "forbidden_libs": []
+  }
+}
