@@ -10,6 +10,9 @@ permissions:
   contents: write
 
 jobs:
+  advmame:
+    uses: ./.github/workflows/build-advmame.yml
+
   bigpemu:
     uses: ./.github/workflows/build-bigpemu.yml
 
@@ -22,8 +25,14 @@ jobs:
   gametank-standalone:
     uses: ./.github/workflows/build-gametank-standalone.yml
 
+  moonlight:
+    uses: ./.github/workflows/build-moonlight.yml
+
   mupen64plus-standalone:
     uses: ./.github/workflows/build-mupen64plus-standalone.yml
+
+  openbor:
+    uses: ./.github/workflows/build-openbor.yml
 
   ppsspp:
     uses: ./.github/workflows/build-ppsspp.yml
@@ -33,3 +42,6 @@ jobs:
 
   vtree:
     uses: ./.github/workflows/build-vtree.yml
+
+  yabasanshiro-standalone:
+    uses: ./.github/workflows/build-yabasanshiro-standalone.yml

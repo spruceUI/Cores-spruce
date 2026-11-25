@@ -16,7 +16,51 @@ permissions:
   contents: write
 
 jobs:
+  # The 64-bit core spruce ships is Lakka v4.x's RPi3-Composite build: cores-experimental's recipe
+  # (scripts/standalone/) rebuilds it with Lakka's own build system, in that repo's image (about 50 minutes).
+  arm64:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      RECIPE: uae4arm-lakka-rpi3-composite-20240502
+      MANIFEST: scripts/standalone/uae4arm.json
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download, check and load the image
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          found="$(python3 -c 'import json, sys; r = json.load(open(sys.argv[1]))[sys.argv[2]]; print(r["archive"], r["archive_sha256"])' "$MANIFEST" "$RECIPE")"
+          read -r archive sha <<< "$found"
+          gh release download toolchains -R spruceUI/cores-experimental --pattern "$archive" --dir "$RUNNER_TEMP"
+          echo "$sha  $RUNNER_TEMP/$archive" | sha256sum -c -
+          # docker load prints the image's tag, or only its ID on a containerd image store.
+          image="$(gunzip -c "$RUNNER_TEMP/$archive" | docker load | sed -n 's/^Loaded image\( ID\)\{0,1\}: //p' | tail -1)"
+          test -n "$image"
+          rm "$RUNNER_TEMP/$archive"
+          echo "IMAGE=$image" >> "$GITHUB_ENV"
+          df -h / | tail -1
+
+      - name: Build
+        run: |
+          mkdir -p output
+          docker run --rm -e OUTPUT_UID="$(id -u)" -e OUTPUT_GID="$(id -g)" \
+            -v "$GITHUB_WORKSPACE:/work:ro" -v "$GITHUB_WORKSPACE/output:/output" "$IMAGE" \
+            bash -l "/work/scripts/standalone/$RECIPE.sh"
+
+      - name: Check and lay out the card files
+        run: python3 scripts/standalone/check.py "$MANIFEST" "$RECIPE" output card
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: uae4arm-arm64
+          path: card/RetroArch/.retroarch/cores64/uae4arm_libretro.so
+          if-no-files-found: error
+          include-hidden-files: true
+
   build:
+    needs: arm64
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -70,6 +114,11 @@ jobs:
         run: |
           docker run --rm -v ${{ github.workspace }}/output:/output cores-arm64 \
             bash -c 'mkdir -p /output/info && cp dist/info/uae4arm_libretro.info /output/info/ 2>/dev/null || true'
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: uae4arm-arm64
+          path: output/cores64
 
       - name: Package and upload
         env:
