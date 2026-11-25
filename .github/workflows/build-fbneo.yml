@@ -5,12 +5,12 @@ on:
     inputs:
       core_ref:
         description: 'Core git ref (commit/tag/branch); default: the commit cores-experimental tested, blank for latest'
-        default: '9d7716aa20cbdf49024f42980c33c7cd366e784f'
+        default: '1f769447fe0ffee8a983ba7878f036ed6d8a2c06'
   workflow_call:
     inputs:
       core_ref:
         type: string
-        default: '9d7716aa20cbdf49024f42980c33c7cd366e784f'
+        default: '1f769447fe0ffee8a983ba7878f036ed6d8a2c06'
 
 permissions:
   contents: write
@@ -60,6 +60,7 @@ jobs:
                 git -C libretro-fbneo submodule update --init --recursive
               fi
               ./libretro-build.sh fbneo
+              aarch64-linux-gnu-strip --strip-unneeded dist/unix/fbneo_libretro.so
               cp dist/unix/fbneo_libretro.so /output/cores64/
             '
       - name: Build armhf
