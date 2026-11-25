@@ -1,0 +1,76 @@
+{
+  "openbor-fflns-arm64-20260512": {
+    "image": "cores-standalone-openbor-fflns:v1",
+    "archive": "cores-standalone-openbor-fflns-v1.tar.gz",
+    "archive_sha256": "bd4daa8a9b8624c29379d30f25f41c9afbef5ed7cf17f9e674bc4f1c9e1c35e8",
+    "spruce": {
+      "OpenBOR_64_mod": "Emu/OPENBOR/OpenBOR_64_mod",
+      "lib64mod/libpng16.so.16": "Emu/OPENBOR/lib64mod/libpng16.so.16",
+      "lib64mod/libz.so.1": "Emu/OPENBOR/lib64mod/libz.so.1"
+    },
+    "shipped": {
+      "OpenBOR_64_mod": "5b35eab30522a06484e550550ccfb008f5e7664768028c6e4dd05f80bfc28da8",
+      "lib64mod/libpng16.so.16": "14ba485f3a55c36893f372831d0445f78fc64f26073a8d7374dc89ac50b95edc",
+      "lib64mod/libz.so.1": "f7421fde8036391750dc2b1dd7299a0a3305a93cb95846fcc381590f565215c1"
+    },
+    "device_libs": [
+      "ld-linux-aarch64.so.1",
+      "libSDL2-2.0.so.0",
+      "libSDL2_gfx-1.0.so.0",
+      "libc.so.6",
+      "libm.so.6",
+      "libpthread.so.0",
+      "libvorbis.so.0",
+      "libvorbisfile.so.3",
+      "libvpx.so.6"
+    ],
+    "forbidden_libs": []
+  },
+  "openbor-lns-a30": {
+    "image": "cores-standalone-armhf:v1",
+    "archive": "cores-standalone-armhf-v1.tar.gz",
+    "archive_sha256": "22ae3091ab280955bef98020e71a9c94bfc1890e4a8730c42ebcefdaaa5244a1",
+    "spruce": {
+      "OpenBOR_mod": "Emu/OPENBOR/OpenBOR_mod"
+    },
+    "shipped": {
+      "OpenBOR_mod": "885f5f78549096295c98f428bfaa7432d0f51a1b0f8f5bec4aaac3d1cf9864da"
+    },
+    "device_libs": [
+      "ld-linux-armhf.so.3",
+      "libSDL2-2.0.so.0",
+      "libSDL2_gfx-1.0.so.0",
+      "libc.so.6",
+      "libm.so.6",
+      "libogg.so.0",
+      "libpng16.so.16",
+      "libpthread.so.0",
+      "libvorbisidec.so.1",
+      "libz.so.1"
+    ],
+    "forbidden_libs": []
+  },
+  "openbor-new": {
+    "image": "cores-standalone-armhf:v1",
+    "archive": "cores-standalone-armhf-v1.tar.gz",
+    "archive_sha256": "22ae3091ab280955bef98020e71a9c94bfc1890e4a8730c42ebcefdaaa5244a1",
+    "spruce": {
+      "OpenBOR_new": "Emu/OPENBOR/OpenBOR_new"
+    },
+    "shipped": {
+      "OpenBOR_new": "7d2bc15997d8472202b59daecb8f0552b2e0c3fa438665c314097f5a71bb01a4"
+    },
+    "device_libs": [
+      "ld-linux-armhf.so.3",
+      "libSDL2-2.0.so.0",
+      "libc.so.6",
+      "libm.so.6",
+      "libogg.so.0",
+      "libpng16.so.16",
+      "libpthread.so.0",
+      "libvorbisidec.so.1",
+      "libz.so.1"
+    ],
+    "forbidden_libs": []
+  }
+}

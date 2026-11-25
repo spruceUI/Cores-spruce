@@ -1,0 +1,29 @@
+{
+  "yabasanshiro-arm64-pgo": {
+    "image": "cores-standalone-yabasanshiro-pgo:v2",
+    "archive": "cores-standalone-yabasanshiro-pgo-v2.tar.gz",
+    "archive_sha256": "cd7d63d36ec88ff269c9d7ae8a6d306eb709f95e216898f5d123c5a34c65cb11",
+    "spruce": {
+      "yabasanshiro": "Emu/SATURN/yabasanshiro",
+      "libs/": "Emu/SATURN/lib64/",
+      "libs/libboost_filesystem.so.1.71.0": "spruce/flip/lib/libboost_filesystem.so.1.71.0"
+    },
+    "shipped": {
+      "yabasanshiro": "059cdbbf788ed3015274a3977c083d7aa69537aa4353796a4c230b16cd8c924a",
+      "libs/libpng16.so.16": "14ba485f3a55c36893f372831d0445f78fc64f26073a8d7374dc89ac50b95edc",
+      "libs/libz.so.1": "f7421fde8036391750dc2b1dd7299a0a3305a93cb95846fcc381590f565215c1",
+      "libs/libboost_filesystem.so.1.71.0": "7009501be2148ef0edb8955c31848082cb3605a232d9bd9678db62d4c5148f79"
+    },
+    "device_libs": [
+      "ld-linux-aarch64.so.1",
+      "libGLESv2.so.2",
+      "libSDL2-2.0.so.0",
+      "libc.so.6",
+      "libgcc_s.so.1",
+      "libm.so.6",
+      "libpthread.so.0",
+      "libstdc++.so.6"
+    ],
+    "forbidden_libs": []
+  }
+}

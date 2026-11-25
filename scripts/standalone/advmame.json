@@ -1,0 +1,26 @@
+{
+  "advmame-arm64-20260328": {
+    "image": "cores-standalone-advmame:v1",
+    "archive": "cores-standalone-advmame-v1.tar.gz",
+    "archive_sha256": "2eb14b3c7827180717ca76786e0b248dad63902a8fed998cd2368a096e780d31",
+    "spruce": {
+      "advmame.7z": "Emu/ARCADE/advmame.7z"
+    },
+    "shipped": {
+      "advmame.7z": "c3e61f75909016eee53ee702419d551612195916343d9b3d19e3e4894828606c"
+    },
+    "device_libs": [
+      "ld-linux-aarch64.so.1",
+      "libSDL2-2.0.so.0",
+      "libasound.so.2",
+      "libc.so.6",
+      "libexpat.so.1",
+      "libfreetype.so.6",
+      "libgomp.so.1",
+      "libm.so.6",
+      "libpthread.so.0",
+      "libz.so.1"
+    ],
+    "forbidden_libs": []
+  }
+}

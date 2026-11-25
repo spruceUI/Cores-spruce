@@ -1,0 +1,56 @@
+{
+  "moonlight": {
+    "image": "cores-standalone-moonlight:v1",
+    "archive": "cores-standalone-moonlight-v1.tar.gz",
+    "archive_sha256": "34bd3055cdaefa15b3b862e230d7e9c0d9b8796da65f22e90bc5fcc00caec11b",
+    "spruce": {
+      "moonlight": "App/Moonlight/ports/moonlightnew/moonlight/moonlight",
+      "libs/": "App/Moonlight/ports/moonlightnew/moonlight/libs/"
+    },
+    "shipped": {
+      "moonlight": "9ceb006398f6715a0cbc7e06f27ff0819a15df2f2d0dcbf9fd8daefb0e123b18",
+      "libs/libavahi-client.so.3": "619ba379bbb93b76d5d164f3d670afb896d8b9b92385fbf47e7a6c794a721734",
+      "libs/libavahi-common.so.3": "cbc2be813172f9b57c5a1efb57af4e548cf922965ca692d086981285161e131a",
+      "libs/libavcodec.so.58": "db0a4ff20a24765b9fc2146e29e2884b364758aecd551502d5f4cf4a66d9a481",
+      "libs/libavutil.so.56": "6c8e3156a86e6220fac7f8f48f804cfd41df96545e18853d86cf5f590bad16a7",
+      "libs/libcrypto.so.3": "bc7729db8fc3a9166f017be1c07ccc00cef48f25ee72571d61bb5649bc84c9eb",
+      "libs/libcurl.so.4": "ac36181ace4c77182df21de8adac4c35761ff256fb2996833a5d57cce0465ba0",
+      "libs/libdbus-1.so.3": "f6dbd10e42c254c0c5469af2862584d99a5d125cd46450559ef54cacbbc67ffc",
+      "libs/libevdev.so.2": "58ff33a3f9d078d1aa026bb9e05b827c9af77eb25c0c53bfd323a145d68cc4ce",
+      "libs/libexpat.so.1": "aa40c8e031a751b71ab72f4e5b307282f37d850df946fd0bc58f709caa49141b",
+      "libs/libgamestream.so": "d4d86f952146ad63e5f71c5da0c65417a4af0a2215a3b15d573493540a25da9e",
+      "libs/libgamestream.so.2.7.0": "d4d86f952146ad63e5f71c5da0c65417a4af0a2215a3b15d573493540a25da9e",
+      "libs/libgamestream.so.4": "d4d86f952146ad63e5f71c5da0c65417a4af0a2215a3b15d573493540a25da9e",
+      "libs/libgcrypt.so.20": "d00669d11d3afcaa56c3654dd158e5929f28265cfb1e5773cd7940304f24f262",
+      "libs/libgpg-error.so.0": "1fe5234793a681e855169fe6703800f6d273bc718f2901a703b89a620dc0b34a",
+      "libs/liblz4.so.1": "7c8ab8eae344c605b41e94c8079b0776be73e8bde0d7133ae571110779c246e2",
+      "libs/liblzma.so.5": "39295b2a71893ae067c387bdb4d47374e6eefd5e11e92a8f37919a7774c8679f",
+      "libs/libmoonlight-common.so": "daffca86d7e7a1c8ee45a2f73cd782b37e49c511b9c9230cb33aa888efed831c",
+      "libs/libmoonlight-common.so.2.7.0": "daffca86d7e7a1c8ee45a2f73cd782b37e49c511b9c9230cb33aa888efed831c",
+      "libs/libmoonlight-common.so.4": "daffca86d7e7a1c8ee45a2f73cd782b37e49c511b9c9230cb33aa888efed831c",
+      "libs/libopus.so.0": "29b7d02c15b66536a58a10aaf11f64663d96b0d1aaa3c768b56dfe75d30f5cdd",
+      "libs/libpulse-simple.so.0": "90c6b092530e9050e7dfd8413b7f5a6c46f84da572f22e4cab6172ee5da26f7a",
+      "libs/libpulse.so.0": "856bb327790b9a311b860c39fc27174a6441c0b1da4827719e062685d64c0db3",
+      "libs/libssl.so.3": "a793ff31aa8955fbc5ba7d4579c43f197fe91b9add663306818eff401458afc2",
+      "libs/libswresample.so": "fdc0a580ba0f8e94ccfcf2a033ca2ee087727a2c5774ce13333272587cd18269",
+      "libs/libswresample.so.3": "fdc0a580ba0f8e94ccfcf2a033ca2ee087727a2c5774ce13333272587cd18269",
+      "libs/libswresample.so.3.9.100": "fdc0a580ba0f8e94ccfcf2a033ca2ee087727a2c5774ce13333272587cd18269",
+      "libs/libsystemd.so.0": "5899be19768050a40d016ca32cce11423f7eaba6086b36c78608244928accd48",
+      "libs/libuuid.so.1": "491b2465f412a139512f4583900ee818f5de0708c20e389a859f048af28e7487"
+    },
+    "device_libs": [
+      "ld-linux-aarch64.so.1",
+      "libSDL2-2.0.so.0",
+      "libasound.so.2",
+      "libc.so.6",
+      "libdl.so.2",
+      "libm.so.6",
+      "libpthread.so.0",
+      "libpulsecommon-13.99.so",
+      "librt.so.1",
+      "libudev.so.1",
+      "libz.so.1"
+    ],
+    "forbidden_libs": []
+  }
+}
